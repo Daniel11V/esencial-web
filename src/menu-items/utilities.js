@@ -4,13 +4,13 @@ import {
     AntDesignOutlined,
     BarcodeOutlined,
     BgColorsOutlined,
-    FontSizeOutlined,
+    BankOutlined,
     LoadingOutlined
 } from '@ant-design/icons';
 
 // icons
 const icons = {
-    FontSizeOutlined,
+    BankOutlined,
     BgColorsOutlined,
     BarcodeOutlined,
     AntDesignOutlined,
@@ -26,11 +26,11 @@ const utilities = {
     type: 'group',
     children: [
         {
-            id: 'util-typography',
-            title: 'Typography',
+            id: 'util-incomes',
+            title: 'Incomes',
             type: 'item',
-            url: '/typography',
-            icon: icons.FontSizeOutlined
+            url: '/incomes',
+            icon: icons.BankOutlined
         },
         {
             id: 'util-color',

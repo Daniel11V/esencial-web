@@ -10,7 +10,7 @@ import ReactApexChart from 'react-apexcharts';
 const barChartOptions = {
     chart: {
         type: 'bar',
-        height: 365,
+        height: 415,
         toolbar: {
             show: false
         }
@@ -77,7 +77,7 @@ const MonthlyBarChart = () => {
 
     return (
         <div id="chart">
-            <ReactApexChart options={options} series={series} type="bar" height={365} />
+            <ReactApexChart options={options} series={series} type="bar" height={415} />
         </div>
     );
 };

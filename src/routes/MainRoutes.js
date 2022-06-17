@@ -24,7 +24,7 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <DashboardDefault />
+            element: <Typography />
         },
         {
             path: 'color',
@@ -48,7 +48,7 @@ const MainRoutes = {
             element: <Shadow />
         },
         {
-            path: 'typography',
+            path: 'incomes',
             element: <Typography />
         },
         {

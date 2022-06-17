@@ -1,263 +1,170 @@
 // material-ui
-import { Breadcrumbs, Divider, Grid, Link, Stack, Typography } from '@mui/material';
+import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { activeItem } from 'store/reducers/money';
 
 // project import
 import ComponentSkeleton from './ComponentSkeleton';
 import MainCard from 'components/MainCard';
+import ListIncomesCard from 'components/ListIncomesCard';
+import { useState } from 'react';
+import IncomeAreaChart from 'pages/dashboard/IncomeAreaChart';
+import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
+
 
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
-const ComponentTypography = () => (
-    <ComponentSkeleton>
-        <Grid container spacing={3}>
-            <Grid item xs={12} lg={6}>
-                <Stack spacing={3}>
-                    <MainCard title="Basic" codeHighlight>
-                        <Stack spacing={0.75} sx={{ mt: -1.5 }}>
-                            <Typography variant="h1">Inter</Typography>
-                            <Typography variant="h5">Font Family</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Regular</Typography>
-                                <Typography variant="h6">Medium</Typography>
-                                <Typography variant="h6">Bold</Typography>
-                            </Breadcrumbs>
-                        </Stack>
-                    </MainCard>
-                    <MainCard title="Heading" codeHighlight>
-                        <Stack spacing={2}>
-                            <Typography variant="h1">H1 Heading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 38px</Typography>
-                                <Typography variant="h6">Weight: Bold</Typography>
-                                <Typography variant="h6">Line Height: 46px</Typography>
-                            </Breadcrumbs>
-                            <Divider />
+const ComponentTypography = () => {
+    const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money);
+    const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
+    const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmmount, 0);
+    const [value, setValue] = useState(12);
+    const status = [
+        {
+            value: 12,
+            label: '1 Year'
+        },
+        {
+            value: 24,
+            label: '2 Years'
+        },
+        {
+            value: 72,
+            label: '6 Years'
+        }
+    ];
+    const [slot, setSlot] = useState('FUTURE');
 
-                            <Typography variant="h2">H2 Heading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 30px</Typography>
-                                <Typography variant="h6">Weight: Bold</Typography>
-                                <Typography variant="h6">Line Height: 38px</Typography>
-                            </Breadcrumbs>
-                            <Divider />
 
-                            <Typography variant="h3">H3 Heading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 24px</Typography>
-                                <Typography variant="h6">Weight: Regular & Bold</Typography>
-                                <Typography variant="h6">Line Height: 32px</Typography>
-                            </Breadcrumbs>
-                            <Divider />
+    const formatNum = (x) => x.toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
 
-                            <Typography variant="h4">H4 Heading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 20px</Typography>
-                                <Typography variant="h6">Weight: Bold</Typography>
-                                <Typography variant="h6">Line Height: 28px</Typography>
-                            </Breadcrumbs>
-                            <Divider />
-
-                            <Typography variant="h5">H5 Heading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 16px</Typography>
-                                <Typography variant="h6">Weight: Regular & Medium & Bold</Typography>
-                                <Typography variant="h6">Line Height: 24px</Typography>
-                            </Breadcrumbs>
-                            <Divider />
-
-                            <Typography variant="h6">H6 Heading / Subheading</Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 14px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 22px</Typography>
-                            </Breadcrumbs>
-                        </Stack>
+    return (
+        <ComponentSkeleton>
+            <Grid container rowSpacing={4.5} columnSpacing={2.75}>
+                {/* row 2 */}
+                <Grid item xs={12} md={8} lg={10}>
+                    <Grid container alignItems="center" justifyContent="space-between">
+                        <Grid item>
+                            <Typography variant="h5">Unique Visitor</Typography>
+                        </Grid>
+                        <Grid item>
+                            <Stack direction="row" alignItems="center" spacing={0}>
+                                <Button
+                                    size="small"
+                                    onClick={() => setSlot('PAST')}
+                                    color={slot === 'PAST' ? 'primary' : 'secondary'}
+                                    variant={slot === 'PAST' ? 'outlined' : 'text'}
+                                >
+                                    Pasado
+                                </Button>
+                                <Button
+                                    size="small"
+                                    onClick={() => setSlot('FUTURE')}
+                                    color={slot === 'FUTURE' ? 'primary' : 'secondary'}
+                                    variant={slot === 'FUTURE' ? 'outlined' : 'text'}
+                                >
+                                    Futuro
+                                </Button>
+                                <TextField
+                                    id="standard-select-currency"
+                                    size="small"
+                                    select
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                    sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.875rem' } }}
+                                >
+                                    {status.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                    <MainCard content={false} sx={{ mt: 1.5 }}>
+                        <Box sx={{ pt: 1, pr: 2 }}>
+                            <IncomeAreaChart slot={slot} ammountPeriods={value} interestAccounts={interestAccounts} />
+                        </Box>
                     </MainCard>
-                    <MainCard title="Body 1" codeHighlight>
-                        <>
-                            <Typography variant="body1" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 14px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 22px</Typography>
-                            </Breadcrumbs>
-                        </>
+                </Grid>
+                <Grid item xs={12} md={4} lg={2}>
+                    <Grid container alignItems="center" justifyContent="space-between">
+                        <Grid item>
+                            <Typography variant="h5">Income Overview</Typography>
+                        </Grid>
+                        <Grid item />
+                    </Grid>
+                    <MainCard sx={{ mt: 2 }} content={false}>
+                        <Box sx={{ p: 3, pb: 0 }}>
+                            <Stack spacing={2}>
+                                <Typography variant="h6" color="textSecondary">
+                                    This Week Statistics
+                                </Typography>
+                                <Typography variant="h3">$7,650</Typography>
+                            </Stack>
+                        </Box>
+                        <MonthlyBarChart />
                     </MainCard>
-                    <MainCard title="Body 2" codeHighlight>
-                        <>
-                            <Typography variant="body2" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                    <MainCard title="Subtitle 1" codeHighlight>
-                        <>
-                            <Typography variant="subtitle1" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 14px</Typography>
-                                <Typography variant="h6">Weight: Medium</Typography>
-                                <Typography variant="h6">Line Height: 22px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                    <MainCard title="Subtitle 2" codeHighlight>
-                        <>
-                            <Typography variant="subtitle2" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Medium</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                    <MainCard title="Caption" codeHighlight>
-                        <Stack spacing={1}>
-                            <Typography variant="caption">
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </Stack>
-                    </MainCard>
-                </Stack>
+                </Grid>
+                <Grid item xs={12} lg={6}>
+                    <Stack spacing={3}>
+                        <ListIncomesCard title={`Ingresos Recurrentes Mensuales: $${totalMonthlyIncome}`} codeHighlight>
+                            <Stack spacing={2}>
+                                {periodicIncomes?.map((perInc, index) => (
+                                    <>
+                                        {!!index && <Divider />}
+                                        <Typography variant="h3">{perInc.title}</Typography>
+                                        <Breadcrumbs aria-label="breadcrumb">
+                                            <Typography variant="h6">Cuenta: {perInc.accountName}</Typography>
+                                            <Typography variant="h6">
+                                                Monto: ${formatNum(perInc.initialAmmount)} {perInc.currencyName}
+                                            </Typography>
+                                            <Typography variant="h6">Cada: {perInc.termInDays} días</Typography>
+                                        </Breadcrumbs>
+                                    </>
+                                ))}
+                            </Stack>
+                        </ListIncomesCard>
+                    </Stack>
+                </Grid>
+                <Grid item xs={12} lg={6}>
+                    <Stack spacing={3}>
+                        <ListIncomesCard title={`Cuentas con Intereses`} codeHighlight>
+                            <Stack spacing={2}>
+                                {interestAccounts?.map((intAcc, index) => (
+                                    <>
+                                        {!!index && <Divider />}
+                                        <Typography variant="h3">{intAcc.accountName}</Typography>
+                                        <Breadcrumbs aria-label="breadcrumb">
+                                            <Typography variant="h6">TNA: {formatNum(intAcc.TNA * 100)}%</Typography>
+                                            <Typography variant="h6">Moneda: {intAcc.currencyName}</Typography>
+                                            <Typography variant="h6">Plazo: {intAcc.termInDays} días</Typography>
+                                            <Typography variant="h6">
+                                                Capital inicial:
+                                                {intAcc.currencyName === mainCurrency
+                                                    ? ` $${formatNum(intAcc.initialAmmount)}`
+                                                    : ` ${formatNum(intAcc.initialAmmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmmount * currencies[intAcc.currencyName].actualValue)
+                                                    })`}
+                                            </Typography>
+                                            {!!intAcc.periodicAdd &&
+                                                <Typography variant="h6">Agrego por plazo:
+                                                    {intAcc.currencyName === mainCurrency
+                                                        ? ` $${formatNum(intAcc.periodicAdd)}`
+                                                        : ` ${formatNum(intAcc.periodicAdd)} ${intAcc.currencyName} ($${formatNum(intAcc.periodicAdd * currencies[intAcc.currencyName].actualValue)
+                                                        })`}
+                                                </Typography>
+                                            }
+                                        </Breadcrumbs>
+                                    </>
+                                ))}
+                            </Stack>
+                        </ListIncomesCard>
+                    </Stack>
+                </Grid>
             </Grid>
-            <Grid item xs={12} lg={6}>
-                <Stack spacing={3}>
-                    <MainCard title="Alignment" codeHighlight>
-                        <>
-                            <Typography variant="body2" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            </Typography>
-                            <Typography variant="body2" textAlign="center" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            </Typography>
-                            <Typography variant="body2" textAlign="right">
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            </Typography>
-                        </>
-                    </MainCard>
-                    <MainCard title="Gutter Bottom" codeHighlight>
-                        <>
-                            <Typography variant="body1" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Typography variant="body2" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                    <MainCard title="Overline" codeHighlight>
-                        <Stack spacing={1.5}>
-                            <Typography variant="overline">
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </Stack>
-                    </MainCard>
-                    <MainCard title="Link" codeHighlight>
-                        <Stack spacing={1.5}>
-                            <Link href="#">www.mantis.com</Link>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 12px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 20px</Typography>
-                            </Breadcrumbs>
-                        </Stack>
-                    </MainCard>
-                    <MainCard title="Colors" codeHighlight>
-                        <>
-                            <Typography variant="h6" color="textPrimary" gutterBottom>
-                                This is textPrimary text color.
-                            </Typography>
-                            <Typography variant="h6" color="textSecondary" gutterBottom>
-                                This is textSecondary text color.
-                            </Typography>
-                            <Typography variant="h6" color="primary" gutterBottom>
-                                This is primary text color.
-                            </Typography>
-                            <Typography variant="h6" color="secondary" gutterBottom>
-                                This is secondary text color.
-                            </Typography>
-                            <Typography variant="h6" color="success" gutterBottom>
-                                This is success text color.
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'warning.main' }} gutterBottom>
-                                This is warning text color.
-                            </Typography>
-                            <Typography variant="h6" color="error" gutterBottom>
-                                This is error text color.
-                            </Typography>
-                        </>
-                    </MainCard>
-                    <MainCard title="Paragraph" codeHighlight>
-                        <>
-                            <Typography variant="body1" gutterBottom>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-                                incididunt ut labore et dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 14px</Typography>
-                                <Typography variant="h6">Weight: Regular</Typography>
-                                <Typography variant="h6">Line Height: 22px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                    <MainCard title="Font Style" codeHighlight>
-                        <>
-                            <Typography variant="body1" gutterBottom sx={{ fontStyle: 'italic' }}>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontStyle: 'italic' }}>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua.
-                            </Typography>
-                            <Breadcrumbs aria-label="breadcrumb">
-                                <Typography variant="h6">Size: 14px</Typography>
-                                <Typography variant="h6">Weight: Italic Regular & Italic Bold</Typography>
-                                <Typography variant="h6">Line Height: 22px</Typography>
-                            </Breadcrumbs>
-                        </>
-                    </MainCard>
-                </Stack>
-            </Grid>
-        </Grid>
-    </ComponentSkeleton>
-);
+        </ComponentSkeleton>
+    );
+};
 
 export default ComponentTypography;
