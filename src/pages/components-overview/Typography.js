@@ -1,5 +1,5 @@
 // material-ui
-import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem } from '@mui/material';
+import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem, OutlinedInput } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { activeItem } from 'store/reducers/money';
 
@@ -33,10 +33,21 @@ const ComponentTypography = () => {
             label: '6 Years'
         }
     ];
-    const [slot, setSlot] = useState('FUTURE');
+    const [slot, setSlot] = useState(0);
+    const [showOnlyInterest, setShowOnlyInterest] = useState(true);
 
 
-    const formatNum = (x) => x.toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+    const formatNum = (x) => {
+        let numWith2DecimalsMax;
+        if (Math.trunc(x) === x) {
+            numWith2DecimalsMax = x;
+        } else if ((Math.trunc(x * 10) / 10) === x) {
+            numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(1);
+        } else {
+            numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(2);
+        }
+        return numWith2DecimalsMax.toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+    }
 
     return (
         <ComponentSkeleton>
@@ -48,25 +59,9 @@ const ComponentTypography = () => {
                             <Typography variant="h5">Unique Visitor</Typography>
                         </Grid>
                         <Grid item>
-                            <Stack direction="row" alignItems="center" spacing={0}>
-                                <Button
-                                    size="small"
-                                    onClick={() => setSlot('PAST')}
-                                    color={slot === 'PAST' ? 'primary' : 'secondary'}
-                                    variant={slot === 'PAST' ? 'outlined' : 'text'}
-                                >
-                                    Pasado
-                                </Button>
-                                <Button
-                                    size="small"
-                                    onClick={() => setSlot('FUTURE')}
-                                    color={slot === 'FUTURE' ? 'primary' : 'secondary'}
-                                    variant={slot === 'FUTURE' ? 'outlined' : 'text'}
-                                >
-                                    Futuro
-                                </Button>
+                            <Stack direction="row" alignItems="center" spacing={1}>
                                 <TextField
-                                    id="standard-select-currency"
+                                    id="standard-select-ammount-periods"
                                     size="small"
                                     select
                                     value={value}
@@ -79,12 +74,56 @@ const ComponentTypography = () => {
                                         </MenuItem>
                                     ))}
                                 </TextField>
+                                <TextField
+                                    id="standard-select-show-only-interest"
+                                    size="small"
+                                    select
+                                    value={showOnlyInterest}
+                                    onChange={(e) => setShowOnlyInterest(e.target.value)}
+                                    sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.875rem' } }}
+                                >
+                                    <MenuItem value={false}>Capital + Intereses</MenuItem>
+                                    <MenuItem value={true}>Solo Intereses</MenuItem>
+                                </TextField>
+                                <Stack direction="row" alignItems="center" spacing={0}>
+
+                                    <Button
+                                        size="small"
+                                        onClick={() => setSlot(val => val - 1)}
+                                        color={slot < (-1) ? 'primary' : 'secondary'}
+                                        variant={slot < (-1) ? 'outlined' : 'text'}
+                                    >
+                                        Prev.
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={() => setSlot(0)}
+                                        color={slot === 0 ? 'primary' : 'secondary'}
+                                        variant={slot === 0 ? 'outlined' : 'text'}
+                                    >
+                                        Hoy
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={() => setSlot(val => val + 1)}
+                                        color={slot > 0 ? 'primary' : 'secondary'}
+                                        variant={slot > 0 ? 'outlined' : 'text'}
+                                    >
+                                        Sig.
+                                    </Button>
+                                </Stack>
                             </Stack>
                         </Grid>
                     </Grid>
                     <MainCard content={false} sx={{ mt: 1.5 }}>
                         <Box sx={{ pt: 1, pr: 2 }}>
-                            <IncomeAreaChart slot={slot} ammountPeriods={value} interestAccounts={interestAccounts} />
+                            <IncomeAreaChart
+                                slot={slot}
+                                ammountPeriods={value}
+                                showOnlyInterest={showOnlyInterest}
+                                interestAccounts={interestAccounts}
+                                mainCurrency={mainCurrency}
+                                currencies={currencies} />
                         </Box>
                     </MainCard>
                 </Grid>
@@ -130,7 +169,7 @@ const ComponentTypography = () => {
                 </Grid>
                 <Grid item xs={12} lg={6}>
                     <Stack spacing={3}>
-                        <ListIncomesCard title={`Cuentas con Intereses`} codeHighlight>
+                        <ListIncomesCard title={`Cuentas e inversiones`} codeHighlight>
                             <Stack spacing={2}>
                                 {interestAccounts?.map((intAcc, index) => (
                                     <>

@@ -14,6 +14,16 @@ const initialState = {
             name: 'USD',
             actualValue: 200,
             inflationTna: 0.5
+        },
+        DAI: {
+            name: 'DAI',
+            actualValue: 200,
+            inflationTna: 0.5
+        },
+        EUR: {
+            name: 'EUR',
+            actualValue: 200,
+            inflationTna: 0.5
         }
     },
     periodicOperations: [
@@ -38,32 +48,68 @@ const initialState = {
     ],
     interestAccounts: [
         {
-            accountName: 'Plazo Fijo Santander',
+            accountName: 'Santander Plazo Fijo ARS',
             currencyName: 'ARS',
-            initialAmmount: 20000,
+            initialAmmount: 141789,
             firstEvent: 1641066015821,
             termInDays: 30,
             TNA: 0.46,
             periodicAdd: 20000
         },
         {
-            accountName: 'Plazo Fijo 2 Santander',
-            currencyName: 'ARS',
-            initialAmmount: 100000,
+            accountName: 'Santander USD',
+            currencyName: 'USD',
+            initialAmmount: 278400,
             firstEvent: 1641066015821,
             termInDays: 30,
-            TNA: 0.48,
+            TNA: 0,
+            periodicAdd: 0
+        },
+        {
+            accountName: 'Efectivo USD',
+            currencyName: 'USD',
+            initialAmmount: 179000,
+            firstEvent: 1641066015821,
+            termInDays: 30,
+            TNA: 0,
+            periodicAdd: 0
+        },
+        {
+            accountName: 'Efectivo EUR',
+            currencyName: 'EUR',
+            initialAmmount: 16000,
+            firstEvent: 1641066015821,
+            termInDays: 30,
+            TNA: 0,
+            periodicAdd: 0
+        },
+        {
+            accountName: 'BlockFi',
+            currencyName: 'DAI',
+            initialAmmount: 28074,
+            firstEvent: 1641066015821,
+            termInDays: 30,
+            TNA: 0.07250,
             periodicAdd: 20000
         },
-        // {
-        //     accountName: 'Ahorro en USD',
-        //     currencyName: 'USD',
-        //     initialAmmount: 100,
-        //     firstEvent: 1641066015821,
-        //     termInDays: 30,
-        //     TNA: 0.10,
-        //     periodicAdd: 100
-        // }
+        {
+            accountName: 'Nexo',
+            currencyName: 'DAI',
+            initialAmmount: 19470,
+            firstEvent: 1641066015821,
+            termInDays: 30,
+            TNA: 0.08,
+            periodicAdd: 20000
+        },
+        {
+            accountName: 'Bitso',
+            currencyName: 'DAI',
+            initialAmmount: 16660,
+            firstEvent: 1641066015821,
+            termInDays: 30,
+            TNA: 0.15,
+            periodicAdd: 20000
+        }
     ]
 };
 
