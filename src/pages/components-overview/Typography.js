@@ -1,5 +1,5 @@
 // material-ui
-import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem, OutlinedInput } from '@mui/material';
+import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { activeItem } from 'store/reducers/money';
 
@@ -22,25 +22,25 @@ const ComponentTypography = () => {
     const status = [
         {
             value: 12,
-            label: '1 Year'
+            label: '1 Año'
         },
         {
             value: 24,
-            label: '2 Years'
+            label: '2 Años'
         },
         {
             value: 72,
-            label: '6 Years'
+            label: '6 Años'
         }
     ];
     const [slot, setSlot] = useState(0);
-    const [showOnlyInterest, setShowOnlyInterest] = useState(true);
+    const [showOnlyInterest, setShowOnlyInterest] = useState(false);
 
 
     const formatNum = (x) => {
         let numWith2DecimalsMax;
-        if (Math.trunc(x) === x) {
-            numWith2DecimalsMax = x;
+        if (x - Math.trunc(x) < 0.01) {
+            numWith2DecimalsMax = Math.trunc(x);
         } else if ((Math.trunc(x * 10) / 10) === x) {
             numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(1);
         } else {
@@ -52,8 +52,8 @@ const ComponentTypography = () => {
     return (
         <ComponentSkeleton>
             <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-                {/* row 2 */}
-                <Grid item xs={12} md={8} lg={10}>
+                {/* row 1 */}
+                <Grid item xs={12} md={7} lg={9}>
                     <Grid container alignItems="center" justifyContent="space-between">
                         <Grid item>
                             <Typography variant="h5">Unique Visitor</Typography>
@@ -120,14 +120,11 @@ const ComponentTypography = () => {
                             <IncomeAreaChart
                                 slot={slot}
                                 ammountPeriods={value}
-                                showOnlyInterest={showOnlyInterest}
-                                interestAccounts={interestAccounts}
-                                mainCurrency={mainCurrency}
-                                currencies={currencies} />
+                                showOnlyInterest={showOnlyInterest} />
                         </Box>
                     </MainCard>
                 </Grid>
-                <Grid item xs={12} md={4} lg={2}>
+                <Grid item xs={12} md={5} lg={3}>
                     <Grid container alignItems="center" justifyContent="space-between">
                         <Grid item>
                             <Typography variant="h5">Income Overview</Typography>
@@ -148,31 +145,10 @@ const ComponentTypography = () => {
                 </Grid>
                 <Grid item xs={12} lg={6}>
                     <Stack spacing={3}>
-                        <ListIncomesCard title={`Ingresos Recurrentes Mensuales: $${totalMonthlyIncome}`} codeHighlight>
-                            <Stack spacing={2}>
-                                {periodicIncomes?.map((perInc, index) => (
-                                    <>
-                                        {!!index && <Divider />}
-                                        <Typography variant="h3">{perInc.title}</Typography>
-                                        <Breadcrumbs aria-label="breadcrumb">
-                                            <Typography variant="h6">Cuenta: {perInc.accountName}</Typography>
-                                            <Typography variant="h6">
-                                                Monto: ${formatNum(perInc.initialAmmount)} {perInc.currencyName}
-                                            </Typography>
-                                            <Typography variant="h6">Cada: {perInc.termInDays} días</Typography>
-                                        </Breadcrumbs>
-                                    </>
-                                ))}
-                            </Stack>
-                        </ListIncomesCard>
-                    </Stack>
-                </Grid>
-                <Grid item xs={12} lg={6}>
-                    <Stack spacing={3}>
                         <ListIncomesCard title={`Cuentas e inversiones`} codeHighlight>
                             <Stack spacing={2}>
-                                {interestAccounts?.map((intAcc, index) => (
-                                    <>
+                                {Object.values(interestAccounts)?.map((intAcc, index) => (
+                                    <div key={intAcc.id}>
                                         {!!index && <Divider />}
                                         <Typography variant="h3">{intAcc.accountName}</Typography>
                                         <Breadcrumbs aria-label="breadcrumb">
@@ -183,19 +159,40 @@ const ComponentTypography = () => {
                                                 Capital inicial:
                                                 {intAcc.currencyName === mainCurrency
                                                     ? ` $${formatNum(intAcc.initialAmmount)}`
-                                                    : ` ${formatNum(intAcc.initialAmmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmmount * currencies[intAcc.currencyName].actualValue)
+                                                    : ` ${formatNum(intAcc.initialAmmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmmount * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
                                                     })`}
                                             </Typography>
                                             {!!intAcc.periodicAdd &&
                                                 <Typography variant="h6">Agrego por plazo:
                                                     {intAcc.currencyName === mainCurrency
                                                         ? ` $${formatNum(intAcc.periodicAdd)}`
-                                                        : ` ${formatNum(intAcc.periodicAdd)} ${intAcc.currencyName} ($${formatNum(intAcc.periodicAdd * currencies[intAcc.currencyName].actualValue)
+                                                        : ` ${formatNum(intAcc.periodicAdd)} ${intAcc.currencyName} ($${formatNum(intAcc.periodicAdd * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
                                                         })`}
                                                 </Typography>
                                             }
                                         </Breadcrumbs>
-                                    </>
+                                    </div>
+                                ))}
+                            </Stack>
+                        </ListIncomesCard>
+                    </Stack>
+                </Grid>
+                <Grid item xs={12} lg={6}>
+                    <Stack spacing={3}>
+                        <ListIncomesCard title={`Ingresos Recurrentes Mensuales: $${totalMonthlyIncome}`} codeHighlight>
+                            <Stack spacing={2}>
+                                {periodicIncomes?.map((perInc, index) => (
+                                    <div key={perInc.creationDate}>
+                                        {!!index && <Divider />}
+                                        <Typography variant="h3">{perInc.title}</Typography>
+                                        <Breadcrumbs aria-label="breadcrumb">
+                                            <Typography variant="h6">Cuenta: {perInc.accountName}</Typography>
+                                            <Typography variant="h6">
+                                                Monto: ${formatNum(perInc.initialAmmount)} {perInc.currencyName}
+                                            </Typography>
+                                            <Typography variant="h6">Cada: {perInc.termInDays} días</Typography>
+                                        </Breadcrumbs>
+                                    </div>
                                 ))}
                             </Stack>
                         </ListIncomesCard>

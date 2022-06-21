@@ -56,7 +56,7 @@ const PeriodicIncomeForm = () => {
                 {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
                     <form noValidate onSubmit={handleSubmit}>
                         <Grid container spacing={3} >
-                            <Typography variant="h3" ml={3}>Añadir Ingreso Recurrente</Typography>
+                            <Typography variant="h3" ml={3} sx={{ width: 1 }} >Añadir Ingreso Recurrente</Typography>
                             <Grid item xs={12} md={6}>
                                 <Stack spacing={1}>
                                     <InputLabel htmlFor="firstname-signup">First Name*</InputLabel>
