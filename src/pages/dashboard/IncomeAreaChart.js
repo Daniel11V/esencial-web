@@ -33,7 +33,7 @@ const monthDif = (d1, d2) => {
 
 // ==============================|| INCOME AREA CHART ||============================== //
 
-const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false }) => {
+const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, checked }) => {
     const theme = useTheme();
     const { primary, secondary } = theme.palette.text;
     const line = theme.palette.divider;
@@ -41,22 +41,23 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
     const { interestAccounts, mainCurrency, currencies, interestOperations } = useSelector((state) => state.money);
 
     const [datePeriods, setDatePeriods] = useState([])
-    const [biggerValues, setBiggerValues] = useState([0, 0])
-    const [allSeries, setAllSeries] = useState([
-        { name: 'Page Views', resIntAccSerie: [23, 34, 12], intAccSerie: [23, 34, 12], intAccPercSerie: [23, 34, 12] },
-        { name: 'Page Views 2', resIntAccSerie: [23, 34, 12], intAccSerie: [23, 34, 12], intAccPercSerie: [23, 34, 12] },
-    ]);
-    const [series, setSeries] = useState([
-        { name: 'Page Views', data: [[new Date().getTime(), 34], [new Date('08/02/2022').getTime(), 54]] },
-        { name: 'Page Views 2', data: [[new Date().getTime(), 24], [new Date('08/02/2022').getTime(), 20]] },
-    ]);
+    const [biggerValues, setBiggerValues] = useState([{}, {}])
+    // const [allSeries, setAllSeries] = useState([
+    //     { name: 'Page Views', resIntAccSerie: [23, 34, 12], intAccSerie: [23, 34, 12], intAccPercSerie: [23, 34, 12] },
+    //     { name: 'Page Views 2', resIntAccSerie: [23, 34, 12], intAccSerie: [23, 34, 12], intAccPercSerie: [23, 34, 12] },
+    // ]);
+    // const [series, setSeries] = useState([
+    //     { name: 'Page Views', data: [[new Date().getTime(), 34], [new Date('08/02/2022').getTime(), 54]] },
+    //     { name: 'Page Views 2', data: [[new Date().getTime(), 24], [new Date('08/02/2022').getTime(), 20]] },
+    // ]);
+    const [allSeries, setAllSeries] = useState([]);
+    const [series, setSeries] = useState([]);
     const [options, setOptions] = useState({
         chart: {
-            height: 500,
             type: 'area',
             toolbar: {
                 show: false
-            }
+            },
         },
         dataLabels: {
             enabled: false
@@ -67,6 +68,14 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
         },
         markers: {
             size: 4,
+        },
+        legend: {
+            show: false,
+            // height: 0,
+            // itemMargin: {
+            //     horizontal: 0
+            // }
+            // fontSize: 'px',
         },
         annotations: {
             xaxis: [
@@ -105,10 +114,10 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
 
 
         // Series
-        let biggerValue = 0;
-        const saveBiggerVal = (v) => { if (v > biggerValue) biggerValue = Math.floor(v) }
-        let biggerValueInt = 0;
-        const saveBiggerValInt = (v) => { if (v > biggerValueInt) biggerValueInt = Math.floor(v) }
+        let biggerValue = {};
+        const saveBiggerVal = (v, id) => { if (!biggerValue?.[id] || v > biggerValue[id]) biggerValue[id] = Math.floor(v) }
+        let biggerValueInt = {};
+        const saveBiggerValInt = (v, id) => { if (!biggerValueInt?.[id] || v > biggerValueInt[id]) biggerValueInt[id] = Math.floor(v) }
 
         const intComp = (day, termInDays, TNA, initialAmmount, periodicAdd, currencyName) => {
             if (termInDays > day) return 0;
@@ -145,14 +154,14 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
             const savePoint = (date, resInt, lastResInt) => {
                 const realInt = resInt - (lastResInt || lastPointSerie()[1])
                 intAccSerie.push([date, truncateTwoDecimals(realInt)])
-                saveBiggerValInt(realInt)
+                saveBiggerValInt(realInt, intAcc.id)
                 // console.log("ACA realInt", realInt, resInt, lastPointSerie()[1])
 
                 const realIntPerc = realInt / lastPointSerie()[1]
                 intAccPercSerie.push([date, truncateTwoDecimals(realIntPerc * 100)])
 
                 resIntAccSerie.push([date, resInt])
-                saveBiggerVal(resInt)
+                saveBiggerVal(resInt, intAcc.id)
             }
 
             if (creationPoint[0] > newDatePeriods[0]) savePoint(creationPoint[0], creationPoint[1])
@@ -187,36 +196,47 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
             }
 
             return {
+                id: intAcc.id,
                 name: intAcc.accountName + (intAcc.TNA === 0 ? '' : ' (TNM ' + formatNum(intAcc.TNA / 12 * 100) + '%)'),
                 resIntAccSerie, intAccSerie, intAccPercSerie
             }
         }
 
         const interestAccountsSeries = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
-            (intAcc.currencyName === mainCurrency && intAcc.TNA === 0)
-                ? prevSeries : [...prevSeries, getInterestAccountSerie(intAcc)], [])
+            [...prevSeries, getInterestAccountSerie(intAcc)], [])
 
         // ARREGLAR
         const getTotalSeries = (prevSeries) => {
             const totalData = [];
             const totalDataInt = [];
             const totalDataIntPerc = [];
-            for (let i = 0; i < prevSeries[0]?.resIntAccSerie?.length; i++) {
+            // const ex = { Jan: {}, Feb: {}, Mar: {}, Apr: {}, May: {}, Jun: {}, Jul: {}, Aug: {}, Sep: {}, Oct: {}, Nov: {}, Dec: {} }
+            // const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+            for (let i = 1; i < newDatePeriods.length; i++) {
                 let totalValue = 0;
-                let totalValueInt = 0;
-                let totalValueIntPerc = 0;
                 for (let j = 0; j < prevSeries.length; j++) {
-                    totalValue += prevSeries[j].resIntAccSerie?.[i]?.[1];
-                    totalValueInt += prevSeries[j].intAccSerie?.[i]?.[1];
-                    totalValueIntPerc += prevSeries[j].intAccPercSerie?.[i]?.[1];
+                    totalValue += [...prevSeries[j].resIntAccSerie]?.reverse()
+                        ?.find(point => point[0] < newDatePeriods[i])?.[1] || 0;
+
+                    // ex[months[new Date(newDatePeriods[i]).getMonth()]][prevSeries[j].name] =
+                    //     [...prevSeries[j].resIntAccSerie]?.reverse()
+                    //         ?.find(point => point[0] < newDatePeriods[i])?.[1] || 0
+
                 }
-                saveBiggerVal(totalValue);
-                saveBiggerValInt(totalValueInt);
-                totalData[i] = [prevSeries[0].resIntAccSerie?.[i]?.[0], truncateTwoDecimals(totalValue)]
-                totalDataInt[i] = [prevSeries[0].intAccSerie?.[i]?.[0], truncateTwoDecimals(totalValueInt)]
-                totalDataIntPerc[i] = [prevSeries[0].intAccPercSerie?.[i]?.[0], truncateTwoDecimals(totalValueIntPerc)]
+
+                // ex[months[new Date(newDatePeriods[i]).getMonth()]]['Total'] = totalValue;
+                const pointDate = newDatePeriods[i];
+                totalData[i - 1] = [pointDate, truncateTwoDecimals(totalValue)]
+                saveBiggerVal(totalValue, 'total');
+                const totalValueInt = totalValue - (totalData[i - 2]?.[1] || 0)
+                totalDataInt[i - 1] = [pointDate, truncateTwoDecimals(totalValueInt)]
+                saveBiggerValInt(totalValueInt, 'total');
+                const totalValueIntPerc = totalData[i - 2]?.[1] ? totalValueInt / (totalData[i - 2]?.[1]) * 100 : 100
+                totalDataIntPerc[i - 1] = [pointDate, truncateTwoDecimals(totalValueIntPerc)]
             }
-            return { name: 'Total', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
+            // console.log("ACA ex", ex);
+            return { id: 'total', name: 'Total', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
         }
         const totalSeries = (interestAccountsSeries.length <= 1) ? [] : [getTotalSeries(interestAccountsSeries)];
 
@@ -240,7 +260,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
         //     interestOperations: interestOperations,
         // })
         const newAllSeries = [...totalSeries, ...interestAccountsSeries]
-        // console.log("ACA newAllSeries", newAllSeries, [biggerValue, biggerValueInt])
+        // console.log("ACA newAllSeries", { newAllSeries, biggerValue, biggerValueInt, newDatePeriods })
         setAllSeries(newAllSeries)
         setDatePeriods(newDatePeriods)
         setBiggerValues([biggerValue, biggerValueInt])
@@ -258,6 +278,11 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
     useEffect(() => {
         // Options
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+        const biggerValuesByInt = biggerValues[showOnlyInterest ? 1 : 0];
+        const biggerValueOfSelected = Math.round(Object.keys(biggerValuesByInt)
+            .reduce((bV, serieKey) => ((checked[serieKey] && biggerValuesByInt[serieKey] > bV)
+                ? biggerValuesByInt[serieKey] : bV), 0));
 
         setOptions((prevState) => ({
             ...prevState,
@@ -277,11 +302,24 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
                 min: datePeriods[0],
                 max: new Date(datePeriods[datePeriods.length - 2]).setDate(31),
                 labels: {
+                    // formatter: (v, timestamp, opt) => {
+                    //     /*console.log("ACA", v, opt);*/
+                    //     const difDays = getDifDays(opt?.w?.globals?.minX, opt?.w?.globals?.maxX)
+                    //     if (difDays >= 360) {
+                    //         console.log("1ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    //         return (new Date(v).getDate() + ' ' + months[new Date(v).getMonth()] + ', ' + new Date(v).getFullYear())
+                    //     } else if (difDays < 800) {
+                    //         console.log("2ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    //         return (months[new Date(datePeriods[opt?.i]).getMonth()] + ', ' + new Date(datePeriods[opt?.i]).getFullYear())
+                    //     } else {
+                    //         console.log("3ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    //         return (new Date(datePeriods[opt?.i]).getFullYear())
+                    //     }
+                    // },
                     formatter: (v, timestamp, opt) => {
                         /*console.log("ACA", v, opt);*/ return getDifDays(opt?.w?.globals?.minX, opt?.w?.globals?.maxX) >= 360
                             ? months[new Date(datePeriods[opt?.i]).getMonth()] + ', ' + new Date(datePeriods[opt?.i]).getFullYear()
-                            : new Date(v).getDate() + ' ' +
-                            months[new Date(v).getMonth()] + ', ' + new Date(v).getFullYear()
+                            : new Date(v).getDate() + ' ' + months[new Date(v).getMonth()] + ', ' + new Date(v).getFullYear()
                     },
                     // datetimeFormatter: {
                     //     year: 'yyyy',
@@ -312,10 +350,10 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
                     show: true,
                     color: line
                 },
-                tickAmount: ammountPeriods - 1
+                tickAmount: 12 - 1
             },
             yaxis: {
-                max: Math.round(biggerValues[showOnlyInterest ? 1 : 0] * 1.05),
+                max: biggerValueOfSelected,
                 labels: {
                     formatter: (v) => "$" + formatNum(v),
                     style: {
@@ -325,7 +363,12 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
             },
             grid: {
                 borderColor: line,
-                strokeDashArray: 0
+                strokeDashArray: 0,
+                // padding: {
+                //     left: 30,
+                //     right: 90,
+                //     bottom: 0,
+                // }
             },
             tooltip: {
                 theme: 'light',
@@ -337,7 +380,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
                 y: {
                     formatter: (v, { dataPointIndex, seriesIndex }) =>
                         ((v < 0) ? '-$' + formatNum(v) * (-1) : '$' + formatNum(v))
-                        + " (" + allSeries[seriesIndex].intAccPercSerie[dataPointIndex][1] + "%)",
+                        + " (" + allSeries.filter(s => checked[s.id])?.[seriesIndex]?.intAccPercSerie?.[dataPointIndex]?.[1] + "%)",
                 },
                 onDatasetHover: {
                     highlightDataSeries: true,
@@ -351,6 +394,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
         theme,
 
         slot,
+        checked,
         ammountPeriods,
         showOnlyInterest,
 
@@ -362,15 +406,16 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false })
 
     useEffect(() => {
         if (allSeries[0]?.name !== 'Page Views' && allSeries?.length) {
-            setSeries(allSeries.reduce((prevIntAcc, actIntAcc) => [...prevIntAcc, {
+            setSeries(allSeries.reduce((prevIntAcc, actIntAcc) => (checked[actIntAcc.id] ? [...prevIntAcc,
+            {
                 name: actIntAcc.name,
                 data: [...(showOnlyInterest ? actIntAcc.intAccSerie : actIntAcc.resIntAccSerie)]
                     .reduce((prevPoint, actPoint) => [...prevPoint, [actPoint[0], truncateTwoDecimals(actPoint[1])]], []),
-            }], []))
+            }] : prevIntAcc), []))
         }
-    }, [showOnlyInterest, allSeries])
+    }, [showOnlyInterest, allSeries, checked])
 
-    return <ReactApexChart options={options} series={series} type="area" height={500} />;
+    return <ReactApexChart options={options} series={series.length ? series : [{ data: [[0, 0]] }]} type="area" height={'100%'} />;
 };
 
 IncomeAreaChart.propTypes = {

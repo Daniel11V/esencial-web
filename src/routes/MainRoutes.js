@@ -7,14 +7,11 @@ import MainLayout from 'layout/MainLayout';
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
 
-// render - sample page
-const SamplePage = Loadable(lazy(() => import('pages/extra-pages/SamplePage')));
-
-// render - utilities
-const Typography = Loadable(lazy(() => import('pages/components-overview/Typography')));
-const Color = Loadable(lazy(() => import('pages/components-overview/Color')));
-const Shadow = Loadable(lazy(() => import('pages/components-overview/Shadow')));
-const AntIcons = Loadable(lazy(() => import('pages/components-overview/AntIcons')));
+// render - datas
+const Accounts = Loadable(lazy(() => import('pages/components-overview/Accounts')));
+const Events = Loadable(lazy(() => import('pages/components-overview/Events')));
+const Operations = Loadable(lazy(() => import('pages/components-overview/Operations')));
+const Currencies = Loadable(lazy(() => import('pages/components-overview/Currencies')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -24,11 +21,11 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <Typography />
+            element: <DashboardDefault />
         },
         {
-            path: 'color',
-            element: <Color />
+            path: 'events',
+            element: <Events />
         },
         {
             path: 'dashboard',
@@ -40,20 +37,16 @@ const MainRoutes = {
             ]
         },
         {
-            path: 'sample-page',
-            element: <SamplePage />
+            path: 'operations',
+            element: <Operations />
         },
         {
-            path: 'shadow',
-            element: <Shadow />
+            path: 'accounts',
+            element: <Accounts />
         },
         {
-            path: 'incomes',
-            element: <Typography />
-        },
-        {
-            path: 'icons/ant',
-            element: <AntIcons />
+            path: 'currencies',
+            element: <Currencies />
         }
     ]
 };

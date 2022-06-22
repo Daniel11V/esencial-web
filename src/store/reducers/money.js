@@ -59,10 +59,10 @@ const initialState = {
         // },
         2: {
             id: 2,
-            accountName: 'Santander Plazo Fijo ARS',
+            accountName: 'Santander PF',
             currencyName: 'ARS',
             initialAmmount: 100000,
-            creationDate: new Date('05/06/2022'),
+            creationDate: new Date('05/06/2022').getTime(),
             termInDays: 30,
             TNA: 0.48,
             periodicAdd: 20000
@@ -72,7 +72,7 @@ const initialState = {
             accountName: 'BlockFi',
             currencyName: 'DAI',
             initialAmmount: 140.37 * 200,
-            creationDate: new Date('04/05/2022'),
+            creationDate: new Date('04/05/2022').getTime(),
             termInDays: 30,
             TNA: 0.07250,
             periodicAdd: 20000
@@ -82,7 +82,7 @@ const initialState = {
             accountName: 'Bitso',
             currencyName: 'DAI',
             initialAmmount: 83.11 * 200,
-            creationDate: new Date('06/06/2022'),
+            creationDate: new Date('06/06/2022').getTime(),
             termInDays: 30,
             TNA: 0.15,
             periodicAdd: 20000
@@ -92,7 +92,7 @@ const initialState = {
             accountName: 'Nexo',
             currencyName: 'DAI',
             initialAmmount: 97.35 * 200,
-            creationDate: new Date('06/05/2022'),
+            creationDate: new Date('06/05/2022').getTime(),
             termInDays: 30,
             TNA: 0.08,
             periodicAdd: 20000
@@ -102,52 +102,92 @@ const initialState = {
             accountName: 'Dolar Efectivo',
             currencyName: 'USD',
             initialAmmount: (895 + 1392) * 200,
-            creationDate: new Date('06/05/2022'),
+            creationDate: new Date('06/05/2022').getTime(),
             termInDays: 30,
             TNA: 0,
-            periodicAdd: 0
+            periodicAdd: 100 * 200
         },
         10: {
             id: 10,
             accountName: 'Euros Efectivo',
             currencyName: 'EUR',
             initialAmmount: 80 * 200,
-            creationDate: new Date('06/05/2022'),
+            creationDate: new Date('06/05/2022').getTime(),
             termInDays: 30,
             TNA: 0,
             periodicAdd: 0
         },
+        // 100: {
+        //     id: 100,
+        //     accountName: 'Euros Efectivo',
+        //     currencyName: 'EUR',
+        //     initialAmmount: 80 * 200,
+        //     creationDate: new Date('06/05/2022').getTime(),
+        //     termInDays: 30,
+        //     TNA: 0,
+        //     periodicAdd: 0
+        // },
+        // 1000: {
+        //     id: 1000,
+        //     accountName: 'Euros Efectivo',
+        //     currencyName: 'EUR',
+        //     initialAmmount: 80 * 200,
+        //     creationDate: new Date('06/05/2022').getTime(),
+        //     termInDays: 30,
+        //     TNA: 0,
+        //     periodicAdd: 0
+        // },
+        // 10000: {
+        //     id: 10000,
+        //     accountName: 'Euros Efectivo',
+        //     currencyName: 'EUR',
+        //     initialAmmount: 80 * 200,
+        //     creationDate: new Date('06/05/2022').getTime(),
+        //     termInDays: 30,
+        //     TNA: 0,
+        //     periodicAdd: 0
+        // },
+        // 100000: {
+        //     id: 100000,
+        //     accountName: 'Euros Efectivo',
+        //     currencyName: 'EUR',
+        //     initialAmmount: 80 * 200,
+        //     creationDate: new Date('06/05/2022').getTime(),
+        //     termInDays: 30,
+        //     TNA: 0,
+        //     periodicAdd: 0
+        // },
         // PAPA
-        // 4: {
-        //     id: 4,
-        //     accountName: 'AMX',
-        //     currencyName: 'ARS',
-        //     initialAmmount: 620.6,
-        //     creationDate: new Date('01/02/2022').getTime(),
-        //     termInDays: 30,
-        //     TNA: 0.55,
-        //     periodicAdd: 0
-        // },
-        // 5: {
-        //     id: 5,
-        //     accountName: 'GOOGL',
-        //     currencyName: 'ARS',
-        //     initialAmmount: 245.2,
-        //     creationDate: new Date('01/02/2022').getTime(),
-        //     termInDays: 30,
-        //     TNA: 0.55,
-        //     periodicAdd: 0
-        // },
-        // 6: {
-        //     id: 6,
-        //     accountName: 'WMT',
-        //     currencyName: 'ARS',
-        //     initialAmmount: 96.2,
-        //     creationDate: new Date('01/02/2022').getTime(),
-        //     termInDays: 30,
-        //     TNA: 0.55,
-        //     periodicAdd: 0
-        // },
+        4: {
+            id: 4,
+            accountName: 'AMX',
+            currencyName: 'ARS',
+            initialAmmount: 620.6,
+            creationDate: new Date('01/02/2022').getTime(),
+            termInDays: 30,
+            TNA: 0.55,
+            periodicAdd: 0
+        },
+        5: {
+            id: 5,
+            accountName: 'GOOGL',
+            currencyName: 'ARS',
+            initialAmmount: 245.2,
+            creationDate: new Date('01/02/2022').getTime(),
+            termInDays: 30,
+            TNA: 0.55,
+            periodicAdd: 0
+        },
+        6: {
+            id: 6,
+            accountName: 'WMT',
+            currencyName: 'ARS',
+            initialAmmount: 96.2,
+            creationDate: new Date('01/02/2022').getTime(),
+            termInDays: 30,
+            TNA: 0.55,
+            periodicAdd: 0
+        },
     },
 
     // {
@@ -207,82 +247,82 @@ const initialState = {
     interestOperations: {
         1: {
             interestAccount: 3,
-            date: new Date('06/06/2022'),
+            date: new Date('06/06/2022').getTime(),
             value: 104032.91,
         },
         1001: {
             interestAccount: 3,
-            date: new Date('06/07/2022'),
+            date: new Date('06/07/2022').getTime(),
             value: 141789.78,
         },
         2: {
             interestAccount: 3,
-            date: new Date('07/06/2022'),
+            date: new Date('07/06/2022').getTime(),
             value: 147383.68,
         },
         22: {
             interestAccount: 3,
-            date: new Date('05/31/2022'),
+            date: new Date('05/31/2022').getTime(),
             value: 141.07 * 200,
         },
         23: {
             interestAccount: 7,
-            date: new Date('06/13/2022'),
+            date: new Date('06/13/2022').getTime(),
             value: 83.33 * 200,
         },
         24: {
             interestAccount: 7,
-            date: new Date('06/20/2022'),
+            date: new Date('06/20/2022').getTime(),
             value: 83.55 * 200,
         },
         25: {
             interestAccount: 8,
-            date: new Date('06/06/2022'),
+            date: new Date('06/06/2022').getTime(),
             value: 97.37 * 200,
         },
         26: {
             interestAccount: 8,
-            date: new Date('06/07/2022'),
+            date: new Date('06/07/2022').getTime(),
             value: 97.39 * 200,
         },
         27: {
             interestAccount: 8,
-            date: new Date('06/08/2022'),
+            date: new Date('06/08/2022').getTime(),
             value: 97.41 * 200,
         },
         28: {
             interestAccount: 8,
-            date: new Date('06/09/2022'),
+            date: new Date('06/09/2022').getTime(),
             value: 97.43 * 200,
         },
         29: {
             interestAccount: 8,
-            date: new Date('06/10/2022'),
+            date: new Date('06/10/2022').getTime(),
             value: 97.45 * 200,
         },
         30: {
             interestAccount: 8,
-            date: new Date('06/11/2022'),
+            date: new Date('06/11/2022').getTime(),
             value: 97.47 * 200,
         },
         31: {
             interestAccount: 8,
-            date: new Date('06/12/2022'),
+            date: new Date('06/12/2022').getTime(),
             value: 97.49 * 200,
         },
         32: {
             interestAccount: 8,
-            date: new Date('06/13/2022'),
+            date: new Date('06/13/2022').getTime(),
             value: 97.51 * 200,
         },
         33: {
             interestAccount: 8,
-            date: new Date('06/14/2022'),
+            date: new Date('06/14/2022').getTime(),
             value: 97.53 * 200,
         },
         34: {
             interestAccount: 8,
-            date: new Date('06/21/2022'),
+            date: new Date('06/21/2022').getTime(),
             value: 97.6637 * 200,
         },
 

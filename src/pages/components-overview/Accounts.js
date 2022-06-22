@@ -1,5 +1,5 @@
 // material-ui
-import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem } from '@mui/material';
+import { Breadcrumbs, Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem, Checkbox, FormControlLabel, IconButton, List } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { activeItem } from 'store/reducers/money';
 
@@ -9,15 +9,35 @@ import MainCard from 'components/MainCard';
 import ListIncomesCard from 'components/ListIncomesCard';
 import { useState } from 'react';
 import IncomeAreaChart from 'pages/dashboard/IncomeAreaChart';
-import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
+// import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
+import { EyeOutlined } from '@ant-design/icons';
 
 
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
-const ComponentTypography = () => {
+const Accounts = () => {
     const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money);
     const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
     const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmmount, 0);
+    const firstRowHeight = 400;
+    const interestAccountsPlot = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
+        [...prevSeries, intAcc], [])
+    const [checked, setChecked] = useState(interestAccountsPlot.reduce((prevSeries, intAcc, index) =>
+        ({ ...prevSeries, [intAcc.id]: (!Object.values(prevSeries).filter(s => s).length && intAcc.id !== 'Total') }), {}))
+
+    const checkAll = () => {
+        setChecked(lv =>
+            Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: true }), {})
+        )
+    }
+
+    const checkOnlyOne = (intAccId) => {
+        setChecked(lv => {
+            const negativeValues = Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: false }), {})
+            return { ...negativeValues, [intAccId]: true }
+        })
+    }
+
     const [value, setValue] = useState(12);
     const status = [
         {
@@ -51,98 +71,7 @@ const ComponentTypography = () => {
 
     return (
         <ComponentSkeleton>
-            <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-                {/* row 1 */}
-                <Grid item xs={12} md={7} lg={9}>
-                    <Grid container alignItems="center" justifyContent="space-between">
-                        <Grid item>
-                            <Typography variant="h5">Unique Visitor</Typography>
-                        </Grid>
-                        <Grid item>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <TextField
-                                    id="standard-select-ammount-periods"
-                                    size="small"
-                                    select
-                                    value={value}
-                                    onChange={(e) => setValue(e.target.value)}
-                                    sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.875rem' } }}
-                                >
-                                    {status.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField
-                                    id="standard-select-show-only-interest"
-                                    size="small"
-                                    select
-                                    value={showOnlyInterest}
-                                    onChange={(e) => setShowOnlyInterest(e.target.value)}
-                                    sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.875rem' } }}
-                                >
-                                    <MenuItem value={false}>Capital + Intereses</MenuItem>
-                                    <MenuItem value={true}>Solo Intereses</MenuItem>
-                                </TextField>
-                                <Stack direction="row" alignItems="center" spacing={0}>
-
-                                    <Button
-                                        size="small"
-                                        onClick={() => setSlot(val => val - 1)}
-                                        color={slot < (-1) ? 'primary' : 'secondary'}
-                                        variant={slot < (-1) ? 'outlined' : 'text'}
-                                    >
-                                        Prev.
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        onClick={() => setSlot(0)}
-                                        color={slot === 0 ? 'primary' : 'secondary'}
-                                        variant={slot === 0 ? 'outlined' : 'text'}
-                                    >
-                                        Hoy
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        onClick={() => setSlot(val => val + 1)}
-                                        color={slot > 0 ? 'primary' : 'secondary'}
-                                        variant={slot > 0 ? 'outlined' : 'text'}
-                                    >
-                                        Sig.
-                                    </Button>
-                                </Stack>
-                            </Stack>
-                        </Grid>
-                    </Grid>
-                    <MainCard content={false} sx={{ mt: 1.5 }}>
-                        <Box sx={{ pt: 1, pr: 2 }}>
-                            <IncomeAreaChart
-                                slot={slot}
-                                ammountPeriods={value}
-                                showOnlyInterest={showOnlyInterest} />
-                        </Box>
-                    </MainCard>
-                </Grid>
-                <Grid item xs={12} md={5} lg={3}>
-                    <Grid container alignItems="center" justifyContent="space-between">
-                        <Grid item>
-                            <Typography variant="h5">Income Overview</Typography>
-                        </Grid>
-                        <Grid item />
-                    </Grid>
-                    <MainCard sx={{ mt: 2 }} content={false}>
-                        <Box sx={{ p: 3, pb: 0 }}>
-                            <Stack spacing={2}>
-                                <Typography variant="h6" color="textSecondary">
-                                    This Week Statistics
-                                </Typography>
-                                <Typography variant="h3">$7,650</Typography>
-                            </Stack>
-                        </Box>
-                        <MonthlyBarChart />
-                    </MainCard>
-                </Grid>
+            <Grid container rowSpacing={4.5} columnSpacing={2.75} >
                 <Grid item xs={12} lg={6}>
                     <Stack spacing={3}>
                         <ListIncomesCard title={`Cuentas e inversiones`} codeHighlight>
@@ -203,4 +132,4 @@ const ComponentTypography = () => {
     );
 };
 
-export default ComponentTypography;
+export default Accounts;

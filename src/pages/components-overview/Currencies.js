@@ -7,18 +7,18 @@ import MainCard from 'components/MainCard';
 
 // styles
 const IFrameWrapper = styled('iframe')(() => ({
-    height: 'calc(100vh - 210px)',
+    height: 'calc(100vh - 220px)',
     border: 'none'
 }));
 
 // ============================|| ANT ICONS ||============================ //
 
-const AntIcons = () => (
+const Currencies = () => (
     <ComponentSkeleton>
-        <MainCard title="Ant Icons">
-            <IFrameWrapper title="Ant Icon" width="100%" src="https://ant.design/components/icon/" />
+        <MainCard title="Monedas">
+            <IFrameWrapper title="Monedas" width="100%" src="https://ant.design/components/icon/" />
         </MainCard>
     </ComponentSkeleton>
 );
 
-export default AntIcons;
+export default Currencies;
