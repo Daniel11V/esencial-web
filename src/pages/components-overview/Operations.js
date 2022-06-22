@@ -16,7 +16,7 @@ import { EyeOutlined } from '@ant-design/icons';
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
 const Accounts = () => {
-    const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money);
+    const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
     const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
     const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmmount, 0);
     const firstRowHeight = 400;

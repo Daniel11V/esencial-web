@@ -33,12 +33,12 @@ const monthDif = (d1, d2) => {
 
 // ==============================|| INCOME AREA CHART ||============================== //
 
-const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, checked }) => {
+const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, checked, height, width }) => {
     const theme = useTheme();
     const { primary, secondary } = theme.palette.text;
     const line = theme.palette.divider;
 
-    const { interestAccounts, mainCurrency, currencies, interestOperations } = useSelector((state) => state.money);
+    const { interestAccounts, mainCurrency, currencies, interestOperations } = useSelector((state) => state.money.data);
 
     const [datePeriods, setDatePeriods] = useState([])
     const [biggerValues, setBiggerValues] = useState([{}, {}])
@@ -54,7 +54,6 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
     const [series, setSeries] = useState([]);
     const [options, setOptions] = useState({
         chart: {
-            type: 'area',
             toolbar: {
                 show: false
             },
@@ -415,7 +414,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
         }
     }, [showOnlyInterest, allSeries, checked])
 
-    return <ReactApexChart options={options} series={series.length ? series : [{ data: [[0, 0]] }]} type="area" height={'100%'} />;
+    return <ReactApexChart options={options} series={series.length ? series : [{ data: [[0, 0]] }]} type="area" height={height} width={width} />;
 };
 
 IncomeAreaChart.propTypes = {

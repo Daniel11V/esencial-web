@@ -12,6 +12,7 @@ const Accounts = Loadable(lazy(() => import('pages/components-overview/Accounts'
 const Events = Loadable(lazy(() => import('pages/components-overview/Events')));
 const Operations = Loadable(lazy(() => import('pages/components-overview/Operations')));
 const Currencies = Loadable(lazy(() => import('pages/components-overview/Currencies')));
+const Database = Loadable(lazy(() => import('pages/components-overview/Database')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -47,6 +48,10 @@ const MainRoutes = {
         {
             path: 'currencies',
             element: <Currencies />
+        },
+        {
+            path: 'database',
+            element: <Database />
         }
     ]
 };

@@ -54,7 +54,6 @@ const datas = {
             type: 'item',
             url: '/currencies',
             icon: icons.AntDesignOutlined,
-            breadcrumbs: false
         },
         {
             id: 'data-database',
@@ -62,7 +61,6 @@ const datas = {
             type: 'item',
             url: '/database',
             icon: icons.CodeOutlined,
-            breadcrumbs: false
         }
     ]
 };

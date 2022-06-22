@@ -5,7 +5,7 @@ import { activeItem } from 'store/reducers/money';
 
 // project import
 import MainCard from 'components/MainCard';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import IncomeAreaChart from 'pages/dashboard/IncomeAreaChart';
 // import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
 import { EyeOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -14,11 +14,26 @@ import { EyeOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
 const DashboardDefault = () => {
-    const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money);
-    const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
-    const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmmount, 0);
+    const { interestAccounts } = useSelector((state) => state.money.data);
     const fullHeight = 'calc(100vh - 210px)';
-    const interestAccountsPlot = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
+    const GraphCardRef = useRef(null);
+    const [GraphCardSize, setGraphCardSize] = useState(['100%', '100%'])
+    useEffect(() => {
+        const handleResize = () => {
+            setGraphCardSize(GraphCardRef.current ? [
+                GraphCardRef.current.offsetWidth - 30,
+                GraphCardRef.current.offsetHeight - 10
+            ] : ['100%', '100%'])
+        }
+
+        window.addEventListener('resize', handleResize)
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+        }
+    }, [GraphCardRef?.current?.offsetWidth])
+
+    const interestAccountsPlot = Object.values((interestAccounts || {})).reduce((prevSeries, intAcc) =>
         [...prevSeries, intAcc], [])
     const extraPlot = [
         { id: 'total', accountName: 'Total' },
@@ -61,7 +76,7 @@ const DashboardDefault = () => {
     return (
         <Grid container columnSpacing={2.75} rowSpacing={4} >
             {/* row 1 */}
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={8} lg={9} >
                 <Grid container alignItems="center" justifyContent="space-between">
                     <Grid item>
                         <Typography variant="h5">Visualización de Cuentas</Typography>
@@ -125,12 +140,13 @@ const DashboardDefault = () => {
                         </Stack>
                     </Grid>
                 </Grid>
-                <MainCard content={false} sx={{ mt: 1.5, pt: 1, pr: 2, pl: 1, height: fullHeight }}>
+                <MainCard ref={GraphCardRef} content={false} sx={{ mt: 1.5, pt: 1, pr: 2, pl: 1, height: fullHeight }}>
                     <IncomeAreaChart
                         slot={slot}
                         ammountPeriods={value}
                         checked={checked}
-                        showOnlyInterest={showOnlyInterest} />
+                        showOnlyInterest={showOnlyInterest}
+                        width={GraphCardSize[0]} height={GraphCardSize[1]} />
                 </MainCard>
             </Grid>
             <Grid item xs={12} md={4} lg={3} >
