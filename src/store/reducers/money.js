@@ -3,6 +3,13 @@ import { createSlice } from '@reduxjs/toolkit';
 
 // initial state
 const initialState = {
+    session: {
+        localStoragePin: localStorage.getItem('moneyPin') || '',
+        invalidPin: false,
+        isAuth: false,
+        openCreatePin: false,
+        openAskPin: false,
+    },
     data: {
         mainCurrency: '',
         currencies: [
@@ -106,15 +113,34 @@ const money = createSlice({
     initialState,
     reducers: {
         saveMoneyString(state, action) {
-            state.data = JSON.parse(action.payload.stringData)
+            state.data = JSON.parse(action.payload)
             // const moneyKeys = Object.keys(state);
             // for (let i = 0; i < moneyKeys.length; i++) {
             //     state[moneyKeys[i]] = newMoneyData[moneyKeys[i]];
             // }
-        }
+        },
+        setOpenCreatePin(state, action) {
+            state.session.openCreatePin = action.payload;
+        },
+        setOpenAskPin(state, action) {
+            state.session.openAskPin = action.payload;
+        },
+        setIsAuth(state, action) {
+            state.session.isAuth = action.payload;
+        },
+        setInvalidPin(state, action) {
+            state.session.invalidPin = action.payload;
+        },
+        setLocaleStoragePin(state, action) {
+            state.session.localStoragePin = action.payload;
+            localStorage.setItem('moneyPin', action.payload);
+        },
+        saveMoneyInLocalStorage(state, action) {
+            localStorage.setItem('moneyData', action.payload || JSON.stringify(state.data));
+        },
     }
 });
 
 export default money.reducer;
 
-export const { saveMoneyString } = money.actions;
+export const { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setLocaleStoragePin, saveMoneyInLocalStorage } = money.actions;

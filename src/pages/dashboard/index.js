@@ -15,7 +15,7 @@ import { EyeOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const DashboardDefault = () => {
     const { interestAccounts } = useSelector((state) => state.money.data);
-    const fullHeight = 'calc(100vh - 210px)';
+    const fullHeight = 'calc(80vh)';
     const GraphCardRef = useRef(null);
     const [GraphCardSize, setGraphCardSize] = useState(['100%', '100%'])
     useEffect(() => {
@@ -33,14 +33,26 @@ const DashboardDefault = () => {
         }
     }, [GraphCardRef?.current?.offsetWidth])
 
-    const interestAccountsPlot = Object.values((interestAccounts || {})).reduce((prevSeries, intAcc) =>
-        [...prevSeries, intAcc], [])
+    const [interestAccountsPlot, setInterestAccountsPlot] = useState([])
     const extraPlot = [
         { id: 'total', accountName: 'Total' },
         { id: 'inflation', accountName: 'Inflación' }
     ];
-    const [checked, setChecked] = useState([...interestAccountsPlot, ...extraPlot].reduce((prevSeries, intAcc, index) =>
-        ({ ...prevSeries, [intAcc.id]: (!index) ? true : false }), {}))
+    const [checked, setChecked] = useState({})
+
+    useEffect(() => {
+        const interestAccountsValues = Object.values(interestAccounts);
+        if (interestAccountsValues?.length) {
+            const newInterestAccountsPlot = interestAccountsValues.reduce((prevSeries, intAcc) =>
+                [...prevSeries, intAcc], [])
+
+            setInterestAccountsPlot(newInterestAccountsPlot);
+
+            setChecked([...newInterestAccountsPlot, ...extraPlot].reduce((prevSeries, intAcc, index) =>
+                ({ ...prevSeries, [intAcc.id]: (!index) ? true : false }), {}))
+        }
+    }, [interestAccounts, setInterestAccountsPlot, setChecked])
+
 
     const checkAll = () => {
         setChecked(lv =>

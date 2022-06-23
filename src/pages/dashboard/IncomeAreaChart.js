@@ -150,8 +150,8 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
             const creationPoint = [intAcc.creationDate, intAcc.initialAmmount];
             let lastAccPoint = [...creationPoint];
             const lastPointSerie = () => resIntAccSerie.length ? resIntAccSerie[resIntAccSerie.length - 1] : [newDatePeriods[0], lastAccPoint[1]];
-            const savePoint = (date, resInt, lastResInt) => {
-                const realInt = resInt - (lastResInt || lastPointSerie()[1])
+            const savePoint = (date, resInt, lastResInt, hasPeriodAdd = false) => {
+                const realInt = ((resInt - (lastResInt || lastPointSerie()[1])) - ((hasPeriodAdd) ? intAcc.periodicAdd : 0));
                 intAccSerie.push([date, truncateTwoDecimals(realInt)])
                 saveBiggerValInt(realInt, intAcc.id)
                 // console.log("ACA realInt", realInt, resInt, lastPointSerie()[1])
@@ -187,11 +187,11 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
                     : intAcc.termInDays * (i + 1)
 
                 const resIntComp = intComp(daysOfInt, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName);
-
+                // console.log("ACA", intAcc.accountName, daysOfInt, resIntComp, monthToFill)
                 // console.log("ACAAAA", i, monthToFill.length, ammountPeriods)
                 savePoint(futurePointDate, resIntComp, (monthToFill.length === (ammountPeriods + 1) && i === 0) ?
                     intComp(daysOfInt - 30, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName)
-                    : null)
+                    : null, daysOfInt - 30 >= 60)
             }
 
             return {

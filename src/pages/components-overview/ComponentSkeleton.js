@@ -17,7 +17,7 @@ const ComponentSkeleton = ({ children }) => {
 
     const skeletonCard = (
         <MainCard
-            title={<Skeleton sx={{ width: { xs: 120, md: 180 } }} />}
+            title={''}
             secondary={<Skeleton animation="wave" variant="circular" width={24} height={24} />}
         >
             <Stack spacing={1}>
