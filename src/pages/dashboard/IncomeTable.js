@@ -266,14 +266,13 @@ IncomeTableToolbar.propTypes = {
     numSelected: PropTypes.number.isRequired,
 };
 
-const IncomeTable = (account, mainCurrency, currencies) => {
+const IncomeTable = ({ account, mainCurrency, currencies }) => {
     const [order, setOrder] = useState('asc');
     const [orderBy, setOrderBy] = useState('finalDate');
     const [selected, setSelected] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    console.log("ACA", mainCurrency, currencies, account)
     const formatCurrency = (num, currencyName) => currencyName === mainCurrency
         ? `$${formatNum(num)}`
         : `${formatNum(num)} ${currencyName} ($${formatNum(num * currencies?.find(c => c.name === currencyName)?.actualValue)})`
@@ -329,20 +328,22 @@ const IncomeTable = (account, mainCurrency, currencies) => {
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
+    // console.log("ACA IncomeTable", mainCurrency, currencies, account, account?.accountName)
+
     return (
         <ListIncomesCard title={`Cuentas e Inversiones Seleccionadas`} codeHighlight>
             <Stack spacing={2}>
-                <Typography variant="h3">{account.accountName}</Typography>
+                <Typography variant="h3">{account?.accountName}</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
-                    <Typography variant="h6">TNA: {formatNum(account.TNA * 100)}%</Typography>
-                    <Typography variant="h6">Moneda: {account.currencyName}</Typography>
-                    <Typography variant="h6">Plazo: {account.termInDays} días</Typography>
+                    <Typography variant="h6">TNA: {formatNum(account?.TNA * 100)}%</Typography>
+                    <Typography variant="h6">Moneda: {account?.currencyName}</Typography>
+                    <Typography variant="h6">Plazo: {account?.termInDays} días</Typography>
                     <Typography variant="h6">
-                        Capital inicial: {formatCurrency(account.initialAmount, account.currencyName)}
+                        Capital inicial: {formatCurrency(account?.initialAmount, account?.currencyName)}
                     </Typography>
-                    {!!account.periodicAdd &&
+                    {!!account?.periodicAdd &&
                         <Typography variant="h6">
-                            Agrego por plazo: {formatCurrency(account.periodicAdd, account.currencyName)}
+                            Agrego por plazo: {formatCurrency(account?.periodicAdd, account?.currencyName)}
                         </Typography>
                     }
                 </Breadcrumbs>

@@ -18,21 +18,21 @@ import { EyeOutlined } from '@ant-design/icons';
 const Accounts = () => {
     const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
     const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
-    const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmmount, 0);
+    const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmount, 0);
     const firstRowHeight = 400;
     const interestAccountsPlot = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
         [...prevSeries, intAcc], [])
-    const [checked, setChecked] = useState(interestAccountsPlot.reduce((prevSeries, intAcc, index) =>
+    const [accountChecked, setAccountChecked] = useState(interestAccountsPlot.reduce((prevSeries, intAcc, index) =>
         ({ ...prevSeries, [intAcc.id]: (!Object.values(prevSeries).filter(s => s).length && intAcc.id !== 'Total') }), {}))
 
     const checkAll = () => {
-        setChecked(lv =>
+        setAccountChecked(lv =>
             Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: true }), {})
         )
     }
 
     const checkOnlyOne = (intAccId) => {
-        setChecked(lv => {
+        setAccountChecked(lv => {
             const negativeValues = Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: false }), {})
             return { ...negativeValues, [intAccId]: true }
         })
@@ -87,8 +87,8 @@ const Accounts = () => {
                                             <Typography variant="h6">
                                                 Capital inicial:
                                                 {intAcc.currencyName === mainCurrency
-                                                    ? ` $${formatNum(intAcc.initialAmmount)}`
-                                                    : ` ${formatNum(intAcc.initialAmmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmmount * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
+                                                    ? ` $${formatNum(intAcc.initialAmount)}`
+                                                    : ` ${formatNum(intAcc.initialAmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmount * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
                                                     })`}
                                             </Typography>
                                             {!!intAcc.periodicAdd &&
@@ -117,7 +117,7 @@ const Accounts = () => {
                                         <Breadcrumbs aria-label="breadcrumb">
                                             <Typography variant="h6">Cuenta: {perInc.accountName}</Typography>
                                             <Typography variant="h6">
-                                                Monto: ${formatNum(perInc.initialAmmount)} {perInc.currencyName}
+                                                Monto: ${formatNum(perInc.initialAmount)} {perInc.currencyName}
                                             </Typography>
                                             <Typography variant="h6">Cada: {perInc.termInDays} días</Typography>
                                         </Breadcrumbs>
