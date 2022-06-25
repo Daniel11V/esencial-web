@@ -9,6 +9,7 @@ const initialState = {
         isAuth: false,
         openCreatePin: false,
         openAskPin: false,
+        openBackdrop: false,
     },
     data: {
         mainCurrency: '',
@@ -53,7 +54,14 @@ const initialState = {
             //     creationDate: new Date('06/05/2022').getTime(),
             //     termInDays: 30,
             //     TNA: 0.08,
-            //     periodicAdd: 20000
+            //     periodicAdd: 20000,
+            // operations: {
+            // 1: {
+            //     interestAccount: 3,
+            //     date: new Date('06/06/2022').getTime(),
+            //     value: 104032.91,
+            // },
+            // }, 
             // },
             // 100: {
             //     id: 100,
@@ -96,7 +104,7 @@ const initialState = {
             //     periodicAdd: 0
             // },
         },
-        interestOperations: {
+        operations: {
             // 1: {
             //     interestAccount: 3,
             //     date: new Date('06/06/2022').getTime(),
@@ -138,9 +146,12 @@ const money = createSlice({
         saveMoneyInLocalStorage(state, action) {
             localStorage.setItem('moneyData', action.payload || JSON.stringify(state.data));
         },
+        setOpenBackdrop(state, action) {
+            state.session.openBackdrop = action.payload;
+        },
     }
 });
 
 export default money.reducer;
 
-export const { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setLocaleStoragePin, saveMoneyInLocalStorage } = money.actions;
+export const { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setLocaleStoragePin, saveMoneyInLocalStorage, setOpenBackdrop } = money.actions;

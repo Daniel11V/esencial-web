@@ -8,34 +8,34 @@ import {
     Card,
     CardContent,
     CardHeader,
-    IconButton,
     TextareaAutosize,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { saveMoneyString, saveMoneyInLocalStorage, setLocaleStoragePin, setOpenCreatePin } from 'store/reducers/money';
+import { useNavigate } from "react-router-dom"
+import { saveMoneyString, saveMoneyInLocalStorage, setLocaleStoragePin, setOpenCreatePin, setOpenBackdrop } from 'store/reducers/money';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import reactElementToJSXString from 'react-element-to-jsx-string';
 // import { activeItem } from 'store/reducers/money';
 
 // project import
 import ComponentSkeleton from './ComponentSkeleton';
-import SyntaxHighlight from 'utils/SyntaxHighlight';
 import { useState, useEffect } from 'react';
 // import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
-import { FolderOpenFilled, FireOutlined, BarChartOutlined, CopyOutlined, CloudDownloadOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FireOutlined, BarChartOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTheme } from '@mui/material/styles';
 
 
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
 const Database = () => {
+    const navigate = useNavigate();
+
     const theme = useTheme();
     const headerSX = { p: 2.5, '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' } };
     const fullHeight = '65vh';
 
     const dispatch = useDispatch();
     const allMoneyData = useSelector((state) => state.money.data);
-    const { isAuth } = useSelector((state) => state.money.data);
+    const { isAuth } = useSelector((state) => state.money.session);
     const [stringData, setStringData] = useState("")
 
     useEffect(() => {
@@ -44,15 +44,23 @@ const Database = () => {
 
     const saveDataString = () => {
         dispatch(saveMoneyString(stringData));
-    }
 
-    const saveDataStringIntoLocalStorage = () => {
         if (isAuth) {
+            dispatch(setOpenBackdrop(true));
             dispatch(saveMoneyInLocalStorage());
+            navigate("/");
         } else {
             dispatch(setOpenCreatePin(true));
         }
     }
+
+    // const saveDataStringIntoLocalStorage = () => {
+    //     if (isAuth) {
+    //         dispatch(saveMoneyInLocalStorage());
+    //     } else {
+    //         dispatch(setOpenCreatePin(true));
+    //     }
+    // }
 
     const deleteLocalStorage = () => {
         dispatch(setLocaleStoragePin(''));
@@ -102,14 +110,14 @@ const Database = () => {
                                 />
                                 <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
                                     <Button sx={{ backgroundColor: theme.palette.error.main }} variant="contained" endIcon={<DeleteOutlined />} onClick={() => setStringData('')}>
-                                        Borrar Actual
+                                        Vaciar editor
                                     </Button>
                                     <Button variant="contained" endIcon={<FireOutlined />} onClick={deleteLocalStorage}>
-                                        Borrar en dispositivo
+                                        Borrar almacenamiento
                                     </Button>
-                                    <Button variant="contained" endIcon={<SaveOutlined />} onClick={saveDataStringIntoLocalStorage}>
+                                    {/* <Button variant="contained" endIcon={<SaveOutlined />} onClick={saveDataStringIntoLocalStorage}>
                                         Guardar en dispositivo
-                                    </Button>
+                                    </Button> */}
                                     {/* <label htmlFor="contained-button-file">
                                         <Input accept="image/*" id="contained-button-file" multiple type="file" style={{ display: 'none' }} />
                                         <Button variant="contained" endIcon={<FolderOpenFilled />}>

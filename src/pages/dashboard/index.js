@@ -1,7 +1,8 @@
 // material-ui
 import { Divider, Grid, Stack, Typography, Button, Box, TextField, MenuItem, Checkbox, FormControlLabel, IconButton, List } from '@mui/material';
+import { setOpenBackdrop } from 'store/reducers/money';
 import { useDispatch, useSelector } from 'react-redux';
-import { activeItem } from 'store/reducers/money';
+// import { activeItem } from 'store/reducers/money';
 
 // project import
 import MainCard from 'components/MainCard';
@@ -9,12 +10,15 @@ import { useState, useEffect, useRef } from 'react';
 import IncomeAreaChart from 'pages/dashboard/IncomeAreaChart';
 // import MonthlyBarChart from 'pages/dashboard/MonthlyBarChart';
 import { EyeOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import IncomeTable from './IncomeTable';
 
 
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
 const DashboardDefault = () => {
-    const { interestAccounts } = useSelector((state) => state.money.data);
+    const dispatch = useDispatch();
+    const { interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
+
     const fullHeight = 'calc(80vh)';
     const GraphCardRef = useRef(null);
     const [GraphCardSize, setGraphCardSize] = useState(['100%', '100%'])
@@ -25,17 +29,14 @@ const DashboardDefault = () => {
                 GraphCardRef.current.offsetHeight - 10
             ] : ['100%', '100%'])
         }
-
         window.addEventListener('resize', handleResize)
-
-        return () => {
-            window.removeEventListener('resize', handleResize)
-        }
+        return () => { window.removeEventListener('resize', handleResize) }
     }, [GraphCardRef?.current?.offsetWidth])
 
     const [interestAccountsPlot, setInterestAccountsPlot] = useState([])
     const extraPlot = [
         { id: 'total', accountName: 'Total' },
+        { id: 'selectedTotal', accountName: 'Total Seleccionados', cantOnlySeeThis: true },
         { id: 'inflation', accountName: 'Inflación' }
     ];
     const [checked, setChecked] = useState({})
@@ -51,8 +52,9 @@ const DashboardDefault = () => {
             setChecked([...newInterestAccountsPlot, ...extraPlot].reduce((prevSeries, intAcc, index) =>
                 ({ ...prevSeries, [intAcc.id]: (!index) ? true : false }), {}))
         }
-    }, [interestAccounts, setInterestAccountsPlot, setChecked])
 
+        dispatch(setOpenBackdrop(false));
+    }, [interestAccounts, setInterestAccountsPlot, setChecked, dispatch])
 
     const checkAll = () => {
         setChecked(lv =>
@@ -86,7 +88,7 @@ const DashboardDefault = () => {
     const [showOnlyInterest, setShowOnlyInterest] = useState(false);
 
     return (
-        <Grid container columnSpacing={2.75} rowSpacing={4} >
+        <Grid container columnSpacing={2.5} rowSpacing={2.5} >
             {/* row 1 */}
             <Grid item xs={12} md={8} lg={9} >
                 <Grid container alignItems="center" justifyContent="space-between">
@@ -211,14 +213,16 @@ const DashboardDefault = () => {
                                                 }
                                                 label={<Typography variant="h6">{extraAcc.accountName}</Typography>}
                                             />
-                                            <IconButton
-                                                sx={{ fontSize: '0.875rem', pr: 4, pl: 4 }}
-                                                size="medium"
-                                                color={checked[extraAcc.id] ? 'primary' : 'secondary'}
-                                                onClick={() => checkOnlyOne(extraAcc.id)}
-                                            >
-                                                <EyeOutlined />
-                                            </IconButton>
+                                            {!extraAcc.cantOnlySeeThis && (
+                                                <IconButton
+                                                    sx={{ fontSize: '0.875rem', pr: 4, pl: 4 }}
+                                                    size="medium"
+                                                    color={checked[extraAcc.id] ? 'primary' : 'secondary'}
+                                                    onClick={() => checkOnlyOne(extraAcc.id)}
+                                                >
+                                                    <EyeOutlined />
+                                                </IconButton>
+                                            )}
                                         </Stack>
                                     </Grid>
                                 ))}
@@ -258,6 +262,9 @@ const DashboardDefault = () => {
                     </Box>
                     {/* <MonthlyBarChart /> */}
                 </MainCard>
+            </Grid>
+            <Grid item xs={12} md={12} lg={12} >
+                <IncomeTable account={interestAccountsPlot?.find(intAcc => !!checked[intAcc.id])} mainCurrency={mainCurrency} currencies={currencies} />
             </Grid>
         </Grid>
     );

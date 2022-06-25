@@ -7,29 +7,14 @@ import { useSelector } from 'react-redux';
 
 // third-party
 import ReactApexChart from 'react-apexcharts';
+import {
+    formatNum,
+    getDifDays,
+    truncateTwoDecimals,
+    getDifMonths,
+} from 'utils/utils';
 
-const formatNum = (x) => {
-    let numWith2DecimalsMax;
-    if (x - Math.trunc(x) < 0.01) {
-        numWith2DecimalsMax = Math.trunc(x);
-    } else if (x - (Math.trunc(x * 10) / 10) < 0.1) {
-        numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(1);
-    } else {
-        numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(2);
-    }
-    return numWith2DecimalsMax.toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
-}
 
-const getDifDays = (start, finish) =>
-    Math.floor((finish - start) / (1000 * 60 * 60 * 24) / 30) * 30 + 30
-
-const truncateTwoDecimals = (v) => Number((Math.floor(v * 100) / 100).toFixed(2))
-
-const monthDif = (d1, d2) => {
-    const t1 = new Date(d1);
-    const t2 = new Date(d2);
-    return ((t2.getFullYear() - t1.getFullYear()) * 12 + t2.getMonth() - t1.getMonth())
-};
 
 // ==============================|| INCOME AREA CHART ||============================== //
 
@@ -38,7 +23,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
     const { primary, secondary } = theme.palette.text;
     const line = theme.palette.divider;
 
-    const { interestAccounts, mainCurrency, currencies, interestOperations } = useSelector((state) => state.money.data);
+    const { interestAccounts, mainCurrency, currencies, operations } = useSelector((state) => state.money.data);
 
     const [datePeriods, setDatePeriods] = useState([])
     const [biggerValues, setBiggerValues] = useState([{}, {}])
@@ -166,7 +151,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
             if (creationPoint[0] > newDatePeriods[0]) savePoint(creationPoint[0], creationPoint[1])
 
             // intAccountOperPoints
-            Object.values(interestOperations)
+            Object.values(operations)
                 .filter(intOper => (intOper.interestAccount === intAcc.id))
                 .sort((a, b) => a.date - b.date)
                 .forEach(actIntOper => {
@@ -183,7 +168,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
                 const futurePointDate = new Date(monthToFill[i]).setDate(new Date(lastAccPoint[0]).getDate())
 
                 const daysOfInt = (lastAccPoint[0] < newDatePeriods[0])
-                    ? monthDif(new Date(lastAccPoint[0]), new Date(futurePointDate)) * 30
+                    ? getDifMonths(new Date(lastAccPoint[0]), new Date(futurePointDate)) * 30
                     : intAcc.termInDays * (i + 1)
 
                 const resIntComp = intComp(daysOfInt, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName);
@@ -191,7 +176,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
                 // console.log("ACAAAA", i, monthToFill.length, ammountPeriods)
                 savePoint(futurePointDate, resIntComp, (monthToFill.length === (ammountPeriods + 1) && i === 0) ?
                     intComp(daysOfInt - 30, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName)
-                    : null, daysOfInt - 30 >= 60)
+                    : null, daysOfInt >= 60)
             }
 
             return {
@@ -256,10 +241,10 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
         //     showOnlyInterest: showOnlyInterest,
         //     mainCurrency: mainCurrency,
         //     currencies: currencies,
-        //     interestOperations: interestOperations,
+        //     operations: operations,
         // })
         const newAllSeries = [...totalSeries, ...interestAccountsSeries]
-        // console.log("ACA newAllSeries", { newAllSeries, biggerValue, biggerValueInt, newDatePeriods })
+        console.log("ACA newAllSeries", { newAllSeries, biggerValue, biggerValueInt, newDatePeriods })
         setAllSeries(newAllSeries)
         setDatePeriods(newDatePeriods)
         setBiggerValues([biggerValue, biggerValueInt])
@@ -271,7 +256,7 @@ const IncomeAreaChart = ({ slot, ammountPeriods = 0, showOnlyInterest = false, c
         interestAccounts,
         mainCurrency,
         currencies,
-        interestOperations,
+        operations,
     ]);
 
     useEffect(() => {
