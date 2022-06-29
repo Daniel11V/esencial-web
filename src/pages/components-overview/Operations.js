@@ -16,11 +16,11 @@ import { EyeOutlined } from '@ant-design/icons';
 // ==============================|| COMPONENTS - TYPOGRAPHY ||============================== //
 
 const Accounts = () => {
-    const { periodicOperations, interestAccounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
+    const { periodicOperations, accounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
     const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
     const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmount, 0);
     const firstRowHeight = 400;
-    const interestAccountsPlot = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
+    const interestAccountsPlot = Object.values(accounts).reduce((prevSeries, intAcc) =>
         [...prevSeries, intAcc], [])
     const [accountChecked, setAccountChecked] = useState(interestAccountsPlot.reduce((prevSeries, intAcc, index) =>
         ({ ...prevSeries, [intAcc.id]: (!Object.values(prevSeries).filter(s => s).length && intAcc.id !== 'Total') }), {}))
@@ -76,7 +76,7 @@ const Accounts = () => {
                     <Stack spacing={3}>
                         <ListIncomesCard title={`Cuentas e inversiones`} codeHighlight>
                             <Stack spacing={2}>
-                                {Object.values(interestAccounts)?.map((intAcc, index) => (
+                                {Object.values(accounts)?.map((intAcc, index) => (
                                     <div key={intAcc.id}>
                                         {!!index && <Divider />}
                                         <Typography variant="h3">{intAcc.accountName}</Typography>

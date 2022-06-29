@@ -180,9 +180,15 @@ const IncomeAreaChart = ({
                         months[new Date(v).getMonth()] + ', ' + new Date(v).getFullYear(),
                 },
                 y: {
-                    formatter: (v, { dataPointIndex, seriesIndex }) =>
-                        ((v < 0) ? '-$' + formatNum(v) * (-1) : '$' + formatNum(v))
-                        + " (" + Object.values(allSeries).filter(s => allChecked[s.id])?.[seriesIndex]?.intAccPercSerie?.[dataPointIndex]?.[1] + "%)",
+                    formatter: (v, { dataPointIndex, seriesIndex }) => {
+                        const accountSerie = Object.values(allSeries).filter(s => allChecked[s.id])?.[seriesIndex]
+                        const actualPointDate = showOnlyInterest
+                            ? accountSerie?.intAccSerie?.[dataPointIndex]?.[0]
+                            : accountSerie?.resIntAccSerie?.[dataPointIndex]?.[0]
+                        const percValue = accountSerie?.intAccPercSerie?.find(percPoint => percPoint[0] === actualPointDate)?.[1];
+                        return ((v < 0) ? '-$' + formatNum(v) * (-1) : '$' + formatNum(v))
+                            + (percValue ? " (" + (percValue < 0 ? "-" : "+") + percValue + "%)" : "")
+                    },
                 },
                 onDatasetHover: {
                     highlightDataSeries: true,
@@ -216,7 +222,6 @@ const IncomeAreaChart = ({
             }] : prevIntAcc), []))
         }
     }, [showOnlyInterest, allSeries, allChecked])
-
     return <ReactApexChart options={options} series={series.length ? series : [{ data: [[0, 0]] }]} type="area" height={height} width={width} />;
 };
 

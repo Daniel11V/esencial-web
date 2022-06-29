@@ -15,6 +15,7 @@ import {
     formatNum,
     truncateTwoDecimals,
     getDifMonths,
+    calcResIntComp,
 } from 'utils/utils';
 
 
@@ -22,11 +23,11 @@ import {
 
 const DashboardDefault = () => {
     const dispatch = useDispatch();
-    const { interestAccounts, mainCurrency, currencies, operations } = useSelector((state) => state.money.data);
+    const { accounts, mainCurrency, currencies, operations } = useSelector((state) => state.money.data);
 
-    const fullHeight = 'calc(80vh)';
+    const fullHeight = 'calc(60vh)';
     const GraphCardRef = useRef(null);
-    const [GraphCardSize, setGraphCardSize] = useState(['100%', '100%'])
+    const [graphCardSize, setGraphCardSize] = useState(['100%', '100%'])
     useEffect(() => {
         const handleResize = () => {
             setGraphCardSize(GraphCardRef.current ? [
@@ -35,6 +36,7 @@ const DashboardDefault = () => {
             ] : ['100%', '100%'])
         }
         window.addEventListener('resize', handleResize)
+        handleResize();
         return () => { window.removeEventListener('resize', handleResize) }
     }, [GraphCardRef?.current?.offsetWidth])
 
@@ -48,22 +50,22 @@ const DashboardDefault = () => {
     const [extraChecked, setExtraChecked] = useState({
         total: false, totalSelection: false, inflation: false
     })
-    const [lastTotalSelection, setLastTotalSelection] = useState({})
 
+    // Set first interestAccountPlot and accountChecked
     useEffect(() => {
-        const interestAccountsValues = Object.values(interestAccounts);
+        const interestAccountsValues = Object.values(accounts);
         if (interestAccountsValues?.length) {
             const newInterestAccountsPlot = interestAccountsValues.reduce((prevSeries, intAcc) =>
                 [...prevSeries, intAcc], [])
 
             setInterestAccountsPlot(newInterestAccountsPlot);
 
-            setAccountChecked([...newInterestAccountsPlot, ...extraPlot].reduce((prevSeries, intAcc, index) =>
-                ({ ...prevSeries, [intAcc.id]: (!index) ? true : false }), {}))
+            setAccountChecked([...newInterestAccountsPlot, ...extraPlot].reduce((prevSeries, intAcc) =>
+                ({ ...prevSeries, [intAcc.id]: (!Object.values(prevSeries).some(pS => !!pS) && !!intAcc.TNA) ? true : false }), {}))
         }
 
         dispatch(setOpenBackdrop(false));
-    }, [interestAccounts, extraPlot, setInterestAccountsPlot, setAccountChecked, dispatch])
+    }, [accounts, extraPlot, setInterestAccountsPlot, setAccountChecked, dispatch])
 
     const checkAll = () => {
         setAccountChecked(lv =>
@@ -85,6 +87,7 @@ const DashboardDefault = () => {
         })
     }
 
+    // Visual Options
     const [ammountPeriods, setAmmountPeriods] = useState(12);
     const status = [
         {
@@ -104,15 +107,20 @@ const DashboardDefault = () => {
     const [showOnlyInterest, setShowOnlyInterest] = useState(false);
 
 
-    // START POINTS
+    // FOR CHART
     const [datePeriods, setDatePeriods] = useState([])
     const [biggerValues, setBiggerValues] = useState([{}, {}])
     const [accountSeries, setAccountSeries] = useState([]);
+    const [lastAccountSeriesProps, setLastAccountSeriesProps] = useState([]);
     const [extraSeries, setExtraSeries] = useState({});
+
+    // FOR TABLE
+    const [accountsTableRows, setAccountsTableRows] = useState({})
 
 
     useEffect(() => {
 
+        // Calculate newDatePeriods
         let newDatePeriods = []
         for (let i = ammountPeriods * slot; i <= ammountPeriods * (slot + 1); i++) {
             const now = new Date(new Date().getFullYear(), 0, 1);
@@ -123,71 +131,94 @@ const DashboardDefault = () => {
             }
         }
 
-
-        // Series
+        // Start BiggerValues
         let biggerValue = {};
         const saveBiggerVal = (v, id) => { if (!biggerValue?.[id] || v > biggerValue[id]) biggerValue[id] = Math.floor(v) }
         let biggerValueInt = {};
         const saveBiggerValInt = (v, id) => { if (!biggerValueInt?.[id] || v > biggerValueInt[id]) biggerValueInt[id] = Math.floor(v) }
 
-        const intComp = (day, termInDays, TNA, initialAmount, periodicAdd, currencyName) => {
-            if (termInDays > day) return 0;
+        const newAccountsTableRows = {}
 
-            const TNM = TNA === 0 ? 0.000001 : (TNA / 365 * termInDays);
-            const AmmountMonths = Math.floor(day / termInDays);
-            const resIntCompLastMonth = (Math.pow((1 + TNM), (AmmountMonths - 1)))
-            // parseFloat(v.toFixed(2))
-            if (currencyName === mainCurrency) {
-                // resIntComp
-                const ans1 = (initialAmount * (Math.pow((1 + TNM), AmmountMonths)));
-                const ans2 = (periodicAdd * (resIntCompLastMonth - 1) / TNM * (1 + TNM));
-                return (ans1 + ans2);
-
-            } else {
-                const TNA_INFL = currencies.find(curr => curr.name === currencyName).inflationTna;
-                const TNM_INFL = TNA_INFL / 365 * termInDays;
-
-                // resIntCompUSD
-                const ans1 = (initialAmount * resIntCompLastMonth);
-                const ans2 = (periodicAdd * ((Math.pow((1 + TNM), AmmountMonths - 2)) - 1) / TNM * (1 + TNM));
-                const ans = ((ans1 + ans2) * (1 + TNM) + periodicAdd * (1 + TNM)) * (Math.pow((1 + TNM_INFL), AmmountMonths));
-                return (ans);
-            }
-        }
-
-        const getInterestAccountSerie = (intAcc) => {
+        // Function getAccountSerie
+        const getAccountSerie = (intAcc) => {
             const resIntAccSerie = [];
             const intAccSerie = [];
             const intAccPercSerie = [];
+
             const creationPoint = [intAcc.creationDate, intAcc.initialAmount];
             let lastAccPoint = [...creationPoint];
             const lastPointSerie = () => resIntAccSerie.length ? resIntAccSerie[resIntAccSerie.length - 1] : [newDatePeriods[0], lastAccPoint[1]];
-            const savePoint = (date, resInt, lastResInt, hasPeriodAdd = false) => {
-                const realInt = ((resInt - (lastResInt || lastPointSerie()[1])) - ((hasPeriodAdd) ? intAcc.periodicAdd : 0));
-                intAccSerie.push([date, truncateTwoDecimals(realInt)])
-                saveBiggerValInt(realInt, intAcc.id)
-                // console.log("ACA realInt", realInt, resInt, lastPointSerie()[1])
+            const savePoint = (date, resInt, hasInterest = true, hasPeriodicAdd = false, lastResInt) => {
+                if (hasInterest) {
+                    const realInt = ((resInt - (lastResInt || lastPointSerie()[1])) - (hasPeriodicAdd ? intAcc.periodicAdd : 0));
+                    intAccSerie.push([date, truncateTwoDecimals(realInt)])
+                    saveBiggerValInt(realInt, intAcc.id)
+                    // console.log("ACA realInt", realInt, resInt, lastPointSerie()[1])
 
-                const realIntPerc = realInt / lastPointSerie()[1]
-                intAccPercSerie.push([date, truncateTwoDecimals(realIntPerc * 100)])
+                    const realIntPerc = realInt / lastPointSerie()[1]
+                    intAccPercSerie.push([date, truncateTwoDecimals(realIntPerc * 100)])
+                }
 
                 resIntAccSerie.push([date, resInt])
                 saveBiggerVal(resInt, intAcc.id)
             }
 
             if (creationPoint[0] > newDatePeriods[0]) savePoint(creationPoint[0], creationPoint[1])
+            newAccountsTableRows[intAcc.id] = [{
+                // initialDate: 0,
+                // days: 0,
+                finalDate: intAcc.creationDate,
+                title: "Creación",
+                // initialAmount: 0,
+                dif: intAcc.initialAmount,
+                difPorc: 0,
+                finalAmount: intAcc.initialAmount,
+            }]
 
-            // intAccountOperPoints
-            Object.values(operations)
-                .filter(intOper => (intOper.interestAccount === intAcc.id))
-                .sort((a, b) => a.date - b.date)
-                .forEach(actIntOper => {
-                    const operPoint = [actIntOper.date, actIntOper.value]
-                    lastAccPoint = operPoint;
-                    if (operPoint[0] > lastPointSerie()[0] && operPoint[0] < newDatePeriods[newDatePeriods.length - 1]) {
+            // accountOperPoints
+            const accountOperations = Object.values(operations)
+                .filter(intOper => (intOper.fromAccount === intAcc.id))
+                .sort((a, b) => a.date - b.date);
+
+            for (let i = 0; i < accountOperations.length; i++) {
+                //accOper in Serie
+                const operPoint = [accountOperations[i].date, accountOperations[i].newValue]
+                if (operPoint[0] > lastPointSerie()[0] && operPoint[0] < newDatePeriods[newDatePeriods.length - 1]) {
+                    if (accountOperations[i].operType === "INTEREST") {
                         savePoint(operPoint[0], operPoint[1]);
+                    } else {
+                        savePoint(operPoint[0], operPoint[1], false);
                     }
-                });
+                }
+
+                if (accountOperations[i].operType === "INTEREST") {
+                    newAccountsTableRows[intAcc.id].push({
+                        // initialDate: accountOperations[i].initialDate ||
+                        //     ((accountOperations[i].date && intAcc.termInDays)
+                        //         ? accountOperations[i].date - intAcc.termInDays : 0),
+                        // days: intAcc.termInDays ? intAcc.termInDays : 0,
+                        finalDate: accountOperations[i].date,
+                        title: "Intereses",
+                        // initialAmount: lastAccPoint[1],
+                        dif: accountOperations[i].newValue - lastAccPoint[1],
+                        difPorc: (accountOperations[i].newValue - lastAccPoint[1]) / lastAccPoint[1],
+                        finalAmount: accountOperations[i].newValue,
+                    })
+                } else if (accountOperations[i].operType === "INCOME") {
+                    newAccountsTableRows[intAcc.id].push({
+                        // initialDate: 0,
+                        // days: 0,
+                        finalDate: accountOperations[i].date,
+                        title: "Ingreso",
+                        // initialAmount: lastAccPoint[1],
+                        dif: accountOperations[i].fromAmount || accountOperations[i].newValue - lastAccPoint[1],
+                        difPorc: 0,
+                        finalAmount: accountOperations[i].newValue,
+                    })
+                }
+
+                lastAccPoint = operPoint;
+            }
 
             // intAccountFuturePoints
             const monthToFill = [...newDatePeriods].filter(d => d + 1 > lastPointSerie()[0])
@@ -198,26 +229,23 @@ const DashboardDefault = () => {
                     ? getDifMonths(new Date(lastAccPoint[0]), new Date(futurePointDate)) * 30
                     : intAcc.termInDays * (i + 1)
 
-                const resIntComp = intComp(daysOfInt, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName);
-                // console.log("ACA", intAcc.accountName, daysOfInt, resIntComp, monthToFill)
+                const resIntComp = calcResIntComp(daysOfInt, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName);
+                // if (intAcc.id === 2) console.log("ACA", resIntComp, daysOfInt)
                 // console.log("ACAAAA", i, monthToFill.length, ammountPeriods)
-                savePoint(futurePointDate, resIntComp, (monthToFill.length === (ammountPeriods + 1) && i === 0) ?
-                    intComp(daysOfInt - 30, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName)
-                    : null, daysOfInt >= 60)
+                savePoint(futurePointDate, resIntComp, true, (daysOfInt >= 60), (monthToFill.length === (ammountPeriods + 1) && i === 0) ?
+                    calcResIntComp(daysOfInt - 30, intAcc.termInDays, intAcc.TNA, lastAccPoint[1], intAcc.periodicAdd, intAcc.currencyName)
+                    : null)
             }
 
             return {
                 id: intAcc.id,
-                name: intAcc.accountName + (intAcc.TNA === 0 ? '' : ' (TNM ' + formatNum(intAcc.TNA / 12 * 100) + '%)'),
+                name: intAcc.accountName + (intAcc.TNA === 0 ? '' : ' (TNM ' + formatNum(intAcc.TNA / 365 * 30 * 100) + '%)'),
                 resIntAccSerie, intAccSerie, intAccPercSerie
             }
         }
 
-        const interestAccountsSeries = Object.values(interestAccounts).reduce((prevSeries, intAcc) =>
-            [...prevSeries, getInterestAccountSerie(intAcc)], [])
-
-        // ARREGLAR
-        const getTotalSeries = (prevSeries) => {
+        // Function getTotalSerie (ARREGLAR)
+        const getTotalSerie = (prevSeries) => {
             const totalData = [];
             const totalDataInt = [];
             const totalDataIntPerc = [];
@@ -249,92 +277,142 @@ const DashboardDefault = () => {
             // console.log("ACA ex", ex);
             return { id: 'total', name: 'Total', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
         }
-        const totalSeries = (interestAccountsSeries.length <= 1) ? {} : getTotalSeries(interestAccountsSeries);
 
-        // console.log("ACA vars", {
-        //     newDatePeriods: newDatePeriods.reduce((prev, act) => [...prev, new Date(act).toDateString()], []),
-        //     interestAccountsSeries,
-        //     totalSeries: totalSeries[0],
-        //     biggerValue,
-        // })
-        // console.log("ACA params", {
-        //     primary: primary,
-        //     secondary: secondary,
-        //     line: line,
-        //     theme: theme,
-        //     slot: slot,
-        //     ammountPeriods: ammountPeriods,
-        //     interestAccounts: interestAccounts,
-        //     showOnlyInterest: showOnlyInterest,
-        //     mainCurrency: mainCurrency,
-        //     currencies: currencies,
-        //     operations: operations,
-        // })
-        // console.log("ACA newAllSeries", { interestAccountsSeries, totalSeries, biggerValue, biggerValueInt, newDatePeriods })
-        setAccountSeries(interestAccountsSeries)
-        setExtraSeries(prevSeries => ({ ...prevSeries, total: totalSeries }))
-        setDatePeriods(newDatePeriods)
-        setBiggerValues([biggerValue, biggerValueInt])
+        // Function getTotalSelectionSerie
+        const getTotalSelectionSerie = (selectedAccountSeries) => {
+            const totalData = [];
+            const totalDataInt = [];
+            const totalDataIntPerc = [];
+
+            for (let i = 1; i < datePeriods.length; i++) {
+                let totalValue = 0;
+                for (let j = 0; j < selectedAccountSeries.length; j++) {
+                    totalValue += [...selectedAccountSeries[j].resIntAccSerie]?.reverse()
+                        ?.find(point => point[0] < datePeriods[i])?.[1] || 0;
+                }
+
+                const pointDate = datePeriods[i];
+                totalData[i - 1] = [pointDate, truncateTwoDecimals(totalValue)]
+                saveBiggerVal(totalValue, 'totalSelection');
+                const totalValueInt = totalValue - (totalData[i - 2]?.[1] || 0)
+                totalDataInt[i - 1] = [pointDate, truncateTwoDecimals(totalValueInt)]
+                saveBiggerValInt(totalValueInt, 'totalSelection');
+                const totalValueIntPerc = totalData[i - 2]?.[1] ? totalValueInt / (totalData[i - 2]?.[1]) * 100 : 100
+                totalDataIntPerc[i - 1] = [pointDate, truncateTwoDecimals(totalValueIntPerc)]
+            }
+            return { id: 'totalSelection', name: 'Total Seleccionados', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
+        }
+
+
+        //// START
+
+        // Get selectedAccountsSeries
+        const newSelectedAccountSeries = Object.values(accounts).reduce((prevSeries, intAcc) => {
+            if (!!accountChecked[intAcc.id] || !!extraChecked?.total) {
+                if (1) { // different that lastSaved
+                    return [...prevSeries, getAccountSerie(intAcc)]
+                }
+            } else {
+                return prevSeries
+            }
+        }, [])
+        // console.log("ACA newSelectedAccountSeries", newSelectedAccountSeries)
+
+        const newAccountSeriesProps = [slot, ammountPeriods, accounts, mainCurrency, currencies, operations, accountChecked, extraChecked]
+        if (JSON.stringify(newAccountSeriesProps) !== JSON.stringify(lastAccountSeriesProps)) {
+
+            // Get selectedExtrasSeries
+            const newSelectedExtraSeries = {}
+
+            if (!!extraChecked?.total && newSelectedAccountSeries.length > 1) {
+                newSelectedExtraSeries.total = getTotalSerie(newSelectedAccountSeries)
+            }
+
+            if (!!extraChecked?.totalSelection && newSelectedAccountSeries.length > 1) {
+                newSelectedExtraSeries.totalSelection = getTotalSelectionSerie(newSelectedAccountSeries.filter(s => !!accountChecked[s.id]));
+            }
+
+
+
+            console.log("ACA newAllSeries", { newSelectedAccountSeries, newSelectedExtraSeries, biggerValue, biggerValueInt, newDatePeriods })
+            setAccountSeries(prevSeries => ([...prevSeries.filter(pS => !newSelectedAccountSeries.some(nS => nS.name === pS.name)), ...newSelectedAccountSeries]))
+            setLastAccountSeriesProps(newAccountSeriesProps)
+            setExtraSeries(prevSeries => ({ ...prevSeries, ...newSelectedExtraSeries }))
+            setDatePeriods(newDatePeriods)
+            setBiggerValues([biggerValue, biggerValueInt])
+
+            // Select accTableRows
+            console.log("ACA newAccountsTableRows", newAccountsTableRows)
+            setAccountsTableRows(prevTables => ({ ...prevTables, ...newAccountsTableRows }));
+        }
 
     }, [
         slot,
         ammountPeriods,
 
-        interestAccounts,
+        accounts,
         mainCurrency,
         currencies,
         operations,
 
+        accountChecked,
+        extraChecked,
+
         setAccountSeries,
+        setLastAccountSeriesProps,
         setExtraSeries,
         setDatePeriods,
-        setBiggerValues
+        setBiggerValues,
+        setAccountsTableRows
     ]);
 
-    // Total Selection
-    useEffect(() => {
-        const selectedAccountSeries = Object.keys(accountChecked).filter(s => !!accountChecked[s])
-        // console.log("ACA Total Selection", selectedAccountSeries)
-        if (!!extraChecked?.totalSelection && selectedAccountSeries.length > 1 && JSON.stringify(selectedAccountSeries) !== JSON.stringify(lastTotalSelection)) {
-
-            let biggerValue = 0;
-            const saveBiggerVal = (v) => { if (v > biggerValue) biggerValue = Math.floor(v) }
-            let biggerValueInt = 0;
-            const saveBiggerValInt = (v) => { if (v > biggerValueInt) biggerValueInt = Math.floor(v) }
+    // // Calculate plots only when they are selected
+    // useEffect(() => {
+    //     const selectedAccounts = Object.keys(accountChecked).filter(s => !!accountChecked[s])
+    //     console.log("ACA selectedAccounts", selectedAccounts)
 
 
-            const getTotalSelectionSeries = (selectedAccountSeries) => {
-                const totalData = [];
-                const totalDataInt = [];
-                const totalDataIntPerc = [];
 
-                for (let i = 1; i < datePeriods.length; i++) {
-                    let totalValue = 0;
-                    for (let j = 0; j < selectedAccountSeries.length; j++) {
-                        totalValue += [...selectedAccountSeries[j].resIntAccSerie]?.reverse()
-                            ?.find(point => point[0] < datePeriods[i])?.[1] || 0;
-                    }
+    //     if (!!extraChecked?.totalSelection && selectedAccounts.length > 1 && JSON.stringify([selectedAccounts, datePeriods]) !== JSON.stringify(lastTotalSelectionProps)) {
 
-                    const pointDate = datePeriods[i];
-                    totalData[i - 1] = [pointDate, truncateTwoDecimals(totalValue)]
-                    saveBiggerVal(totalValue);
-                    const totalValueInt = totalValue - (totalData[i - 2]?.[1] || 0)
-                    totalDataInt[i - 1] = [pointDate, truncateTwoDecimals(totalValueInt)]
-                    saveBiggerValInt(totalValueInt);
-                    const totalValueIntPerc = totalData[i - 2]?.[1] ? totalValueInt / (totalData[i - 2]?.[1]) * 100 : 100
-                    totalDataIntPerc[i - 1] = [pointDate, truncateTwoDecimals(totalValueIntPerc)]
-                }
-                return { id: 'totalSelection', name: 'Total Seleccionados', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
-            }
-            const totalSelectionSeries = getTotalSelectionSeries(Object.values(accountSeries).filter(s => s.id !== 'total' && accountChecked[s.id]));
+    //         let biggerValue = 0;
+    //         const saveBiggerVal = (v) => { if (v > biggerValue) biggerValue = Math.floor(v) }
+    //         let biggerValueInt = 0;
+    //         const saveBiggerValInt = (v) => { if (v > biggerValueInt) biggerValueInt = Math.floor(v) }
 
-            setExtraSeries((prevSeries) => ({ ...prevSeries, "totalSelection": totalSelectionSeries }))
-            setBiggerValues((bigTypes) => [{ ...bigTypes[0], totalSelection: biggerValue }, { ...bigTypes[1], totalSelection: biggerValueInt }]);
-            setLastTotalSelection(selectedAccountSeries);
-            // console.log("ACA Total Selection 2", totalSelectionSeries)
-        }
 
-    }, [accountChecked, extraChecked, datePeriods, accountSeries, lastTotalSelection, setBiggerValues, setExtraSeries, setLastTotalSelection])
+    //         const getTotalSelectionSeries = (selectedAccountSeries) => {
+    //             const totalData = [];
+    //             const totalDataInt = [];
+    //             const totalDataIntPerc = [];
+
+    //             for (let i = 1; i < datePeriods.length; i++) {
+    //                 let totalValue = 0;
+    //                 for (let j = 0; j < selectedAccountSeries.length; j++) {
+    //                     totalValue += [...selectedAccountSeries[j].resIntAccSerie]?.reverse()
+    //                         ?.find(point => point[0] < datePeriods[i])?.[1] || 0;
+    //                 }
+
+    //                 const pointDate = datePeriods[i];
+    //                 totalData[i - 1] = [pointDate, truncateTwoDecimals(totalValue)]
+    //                 saveBiggerVal(totalValue);
+    //                 const totalValueInt = totalValue - (totalData[i - 2]?.[1] || 0)
+    //                 totalDataInt[i - 1] = [pointDate, truncateTwoDecimals(totalValueInt)]
+    //                 saveBiggerValInt(totalValueInt);
+    //                 const totalValueIntPerc = totalData[i - 2]?.[1] ? totalValueInt / (totalData[i - 2]?.[1]) * 100 : 100
+    //                 totalDataIntPerc[i - 1] = [pointDate, truncateTwoDecimals(totalValueIntPerc)]
+    //             }
+    //             return { id: 'totalSelection', name: 'Total Seleccionados', resIntAccSerie: totalData, intAccSerie: totalDataInt, intAccPercSerie: totalDataIntPerc };
+    //         }
+    //         const totalSelectionSeries = getTotalSelectionSeries(Object.values(accountSeries).filter(s => s.id !== 'total' && accountChecked[s.id]));
+
+    //         setExtraSeries((prevSeries) => ({ ...prevSeries, "totalSelection": totalSelectionSeries }))
+    //         setBiggerValues((bigTypes) => [{ ...bigTypes[0], totalSelection: biggerValue }, { ...bigTypes[1], totalSelection: biggerValueInt }]);
+    //         setLastTotalSelection([selectedAccounts, datePeriods]);
+    //         // console.log("ACA Total Selection 2", totalSelectionSeries)
+    //     }
+
+    // }, [accountChecked, extraChecked, datePeriods, accountSeries, lastTotalSelectionProps, setBiggerValues, setExtraSeries, setLastTotalSelection])
 
 
 
@@ -415,7 +493,7 @@ const DashboardDefault = () => {
                         allSeries={[...accountSeries, ...Object.values(extraSeries)]}
                         allChecked={{ ...accountChecked, ...extraChecked }}
                         showOnlyInterest={showOnlyInterest}
-                        width={GraphCardSize[0]} height={GraphCardSize[1]} />
+                        width={graphCardSize[0]} height={graphCardSize[1]} />
                 </MainCard>
             </Grid>
             <Grid item xs={12} md={4} lg={3} >
@@ -519,7 +597,9 @@ const DashboardDefault = () => {
                 </MainCard>
             </Grid>
             <Grid item xs={12} md={12} lg={12} >
-                <IncomeTable account={interestAccountsPlot?.find(intAcc => !!accountChecked[intAcc.id])} mainCurrency={mainCurrency} currencies={currencies} />
+                <IncomeTable
+                    accountTableRows={[...(accountsTableRows[Object.keys(accountChecked).find(accId => !!accountChecked[accId])] || [])]}
+                    account={interestAccountsPlot?.find(intAcc => !!accountChecked[intAcc.id])} />
             </Grid>
         </Grid>
     );
