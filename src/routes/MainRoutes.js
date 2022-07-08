@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project import
 import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
+import { DashboardContextProvider } from 'context/DashboardContext';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
@@ -22,7 +23,7 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <DashboardDefault />
+            element: (<DashboardContextProvider><DashboardDefault /></DashboardContextProvider>)
         },
         {
             path: 'events',
@@ -33,7 +34,7 @@ const MainRoutes = {
             children: [
                 {
                     path: 'default',
-                    element: <DashboardDefault />
+                    element: (<DashboardContextProvider><DashboardDefault /></DashboardContextProvider>)
                 }
             ]
         },

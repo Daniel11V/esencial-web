@@ -3,7 +3,8 @@ import { forwardRef } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material';
+import { Card, CardContent, CardHeader, Divider, Typography, Stack, ButtonBase } from '@mui/material';
+import { PlusOutlined } from '@ant-design/icons';
 
 // project import
 import PeriodicIncomeForm from './forms/PeriodicIncomeForm';
@@ -11,7 +12,7 @@ import OpenCardFooter from './third-party/OpenCardFooter';
 
 // header style
 const headerSX = {
-    p: 2.5,
+    p: 0, pl: 2,
     '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' }
 };
 
@@ -33,12 +34,12 @@ const ListIncomesCard = forwardRef(
             sx = {},
             title,
             codeHighlight,
+            handleNewAccount,
             ...others
         },
         ref
     ) => {
         const theme = useTheme();
-        boxShadow = theme.palette.mode === 'dark' ? boxShadow || true : boxShadow;
 
         return (
             <Card
@@ -47,10 +48,9 @@ const ListIncomesCard = forwardRef(
                 {...others}
                 sx={{
                     ...sx,
-                    border: border ? '1px solid' : 'none',
+                    border: '1px solid',
                     borderRadius: 2,
-                    borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey.A800,
-                    boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
+                    borderColor: theme.palette.grey.A800,
                     ':hover': {
                         boxShadow: boxShadow ? shadow || theme.customShadows.z1 : 'inherit'
                     },
@@ -64,7 +64,21 @@ const ListIncomesCard = forwardRef(
             >
                 {/* card header and action */}
                 {!darkTitle && title && (
-                    <CardHeader sx={headerSX} titleTypographyProps={{ variant: 'subtitle1' }} title={title} action={secondary} />
+                    <CardHeader sx={headerSX} title={(
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%" }}>
+                            <Typography variant="subtitle1" sx={{ mb: -0.5 }}>{title}</Typography>
+                            <ButtonBase sx={{ p: 2 }} onClick={handleNewAccount} >
+                                <Typography sx={{ color: "#1890FF", mb: -0.3, fontWeight: 'bold', textDecoration: 'underline' }}>Nueva cuenta</Typography>
+                            </ButtonBase>
+                            {/* <Stack direction="row" alignItems="center">
+                                <Tooltip title="Crear cuenta">
+                                    <IconButton color="primary" size="small" sx={{ m: -0.5, height: 'auto' }} >
+                                        <PlusOutlined />
+                                    </IconButton>
+                                </Tooltip>
+                            </Stack> */}
+                        </Stack>
+                    )} action={secondary} />
                 )}
                 {darkTitle && title && (
                     <CardHeader sx={headerSX} title={<Typography variant="h3">{title}</Typography>} action={secondary} />

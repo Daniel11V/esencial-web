@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from 'react-redux';
-import { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setOpenBackdrop, setLocaleStoragePin, saveMoneyInLocalStorage } from 'store/reducers/money';
+import { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setLoading, setLocaleStoragePin, saveMoneyInLocalStorage } from 'store/reducers/money';
 
 import {
     Button,
@@ -22,7 +22,7 @@ import {
 const Authentication = ({ children }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { localStoragePin, openCreatePin, openAskPin, openBackdrop, isAuth, invalidPin } = useSelector((state) => state.money.session);
+    const { localStoragePin, openCreatePin, openAskPin, loading, isAuth, invalidPin } = useSelector((state) => state.money.session);
 
     const [inputPin, setInputPin] = useState('')
 
@@ -44,7 +44,7 @@ const Authentication = ({ children }) => {
     const createPin = () => {
         if (inputPin) {
             dispatch(setOpenCreatePin(false));
-            dispatch(setOpenBackdrop(true));
+            dispatch(setLoading(true));
             dispatch(setIsAuth(true));
             dispatch(saveMoneyInLocalStorage());
             dispatch(setLocaleStoragePin(inputPin));
@@ -129,7 +129,7 @@ const Authentication = ({ children }) => {
 
             <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={openBackdrop}
+                open={loading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>

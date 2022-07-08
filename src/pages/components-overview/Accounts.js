@@ -19,42 +19,6 @@ const Accounts = () => {
     const { periodicOperations, accounts, mainCurrency, currencies } = useSelector((state) => state.money.data);
     const periodicIncomes = periodicOperations.filter((perOper) => perOper.type === 'INCOME');
     const totalMonthlyIncome = periodicIncomes.reduce((sum, perInc) => sum + perInc.initialAmount, 0);
-    const firstRowHeight = 400;
-    const interestAccountsPlot = Object.values(accounts).reduce((prevSeries, intAcc) =>
-        [...prevSeries, intAcc], [])
-    const [accountChecked, setAccountChecked] = useState(interestAccountsPlot.reduce((prevSeries, intAcc, index) =>
-        ({ ...prevSeries, [intAcc.id]: (!Object.values(prevSeries).filter(s => s).length && intAcc.id !== 'Total') }), {}))
-
-    const checkAll = () => {
-        setAccountChecked(lv =>
-            Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: true }), {})
-        )
-    }
-
-    const checkOnlyOne = (intAccId) => {
-        setAccountChecked(lv => {
-            const negativeValues = Object.keys(lv).reduce((allValues, lvKey) => ({ ...allValues, [lvKey]: false }), {})
-            return { ...negativeValues, [intAccId]: true }
-        })
-    }
-
-    const [value, setValue] = useState(12);
-    const status = [
-        {
-            value: 12,
-            label: '1 Año'
-        },
-        {
-            value: 24,
-            label: '2 Años'
-        },
-        {
-            value: 72,
-            label: '6 Años'
-        }
-    ];
-    const [slot, setSlot] = useState(0);
-    const [showOnlyInterest, setShowOnlyInterest] = useState(false);
 
 
     const formatNum = (x) => {
@@ -76,26 +40,19 @@ const Accounts = () => {
                     <Stack spacing={3}>
                         <ListIncomesCard title={`Cuentas e inversiones`} codeHighlight>
                             <Stack spacing={2}>
-                                {Object.values(accounts)?.map((intAcc, index) => (
-                                    <div key={intAcc.id}>
+                                {accounts?.map((intAcc, index) => (
+                                    <div key={intAcc.creationDate}>
                                         {!!index && <Divider />}
                                         <Typography variant="h3">{intAcc.accountName}</Typography>
                                         <Breadcrumbs aria-label="breadcrumb">
+                                            <Typography variant="h6">Moneda: {intAcc.currency}</Typography>
                                             <Typography variant="h6">TNA: {formatNum(intAcc.TNA * 100)}%</Typography>
-                                            <Typography variant="h6">Moneda: {intAcc.currencyName}</Typography>
                                             <Typography variant="h6">Plazo: {intAcc.termInDays} días</Typography>
-                                            <Typography variant="h6">
-                                                Capital inicial:
-                                                {intAcc.currencyName === mainCurrency
-                                                    ? ` $${formatNum(intAcc.initialAmount)}`
-                                                    : ` ${formatNum(intAcc.initialAmount)} ${intAcc.currencyName} ($${formatNum(intAcc.initialAmount * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
-                                                    })`}
-                                            </Typography>
                                             {!!intAcc.periodicAdd &&
                                                 <Typography variant="h6">Agrego por plazo:
-                                                    {intAcc.currencyName === mainCurrency
+                                                    {intAcc.currency === mainCurrency
                                                         ? ` $${formatNum(intAcc.periodicAdd)}`
-                                                        : ` ${formatNum(intAcc.periodicAdd)} ${intAcc.currencyName} ($${formatNum(intAcc.periodicAdd * currencies.find(c => c.name === intAcc.currencyName)?.actualValue)
+                                                        : ` ${formatNum(intAcc.periodicAdd)} ${intAcc.currency} ($${formatNum(intAcc.periodicAdd * currencies.find(c => c.name === intAcc.currency)?.actualValue)
                                                         })`}
                                                 </Typography>
                                             }
@@ -117,7 +74,7 @@ const Accounts = () => {
                                         <Breadcrumbs aria-label="breadcrumb">
                                             <Typography variant="h6">Cuenta: {perInc.accountName}</Typography>
                                             <Typography variant="h6">
-                                                Monto: ${formatNum(perInc.initialAmount)} {perInc.currencyName}
+                                                Monto: ${formatNum(perInc.initialAmount)} {perInc.currency}
                                             </Typography>
                                             <Typography variant="h6">Cada: {perInc.termInDays} días</Typography>
                                         </Breadcrumbs>

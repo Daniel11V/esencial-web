@@ -1,7 +1,8 @@
 import { store } from 'store';
 const { mainCurrency, currencies } = store.getState().money.data;
 
-export const formatNum = (x) => {
+export const fixDecimals = (num, decimals = 2) => {
+    let x = Number(num)
     let numWith2DecimalsMax;
     if (x - Math.trunc(x) < 0.01) {
         numWith2DecimalsMax = Math.trunc(x);
@@ -10,16 +11,18 @@ export const formatNum = (x) => {
     } else {
         numWith2DecimalsMax = (Math.floor(x * 100) / 100).toFixed(2);
     }
-    return numWith2DecimalsMax.toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+    return numWith2DecimalsMax
 }
 
-export const formatCurrency = (num, currencyName) => currencyName === mainCurrency
-    ? `$${formatNum(num)}`
-    : `${formatNum(num)} ${currencyName} ($${formatNum(num * currencies?.find(c => c.name === currencyName)?.actualValue)})`
+export const formatNum = (num) => {
+    return fixDecimals(num).toString().replace(".", ",").replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+}
+
+const twoDigitsMin = (num) => (num < 10) ? "0" + num : num
 
 export const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.getDate() + "/" + date.getMonth() + "/" + date.getFullYear()
+    return twoDigitsMin(date.getDate()) + "/" + twoDigitsMin(date.getMonth() + 1) + "/" + date.getFullYear()
 }
 
 export const getDifDays = (d1, d2) =>
@@ -35,7 +38,7 @@ export const getDifMonths = (d1, d2) => {
 
 
 // Calcular el capital en plazo fijo con interes y monto añadido cada mes
-export const calcResIntComp = (day, termInDays, TNA, initialAmount, periodicAdd, currencyName) => {
+export const calcResIntComp = (day, termInDays = 30, TNA, initialAmount, periodicAdd, currencyName) => {
     if (termInDays > day) return 0;
 
     const TNM = TNA === 0 ? 0.000001 : (TNA / 365 * termInDays);
@@ -44,6 +47,9 @@ export const calcResIntComp = (day, termInDays, TNA, initialAmount, periodicAdd,
     // parseFloat(v.toFixed(2))
     if (currencyName === mainCurrency) {
         // resIntComp
+        // console.log("ACA futureTotalAmount 1", day / termInDays, day, termInDays)
+        if (TNA === 0) return initialAmount + periodicAdd * (AmmountMonths - 1);
+        // console.log("ACA futureTotalAmount 2", TNA)
         const ans1 = (initialAmount * (Math.pow((1 + TNM), AmmountMonths)));
         const ans2 = (periodicAdd * (resIntCompLastMonth - 1) / TNM * (1 + TNM));
         return (ans1 + ans2);
@@ -59,3 +65,8 @@ export const calcResIntComp = (day, termInDays, TNA, initialAmount, periodicAdd,
         return (ans);
     }
 }
+
+
+// Igual al Object.keys(object) solo que para los arrays
+export const getKeys = (arr, keyId = "creationDate") =>
+    arr.reduce((allKeys, actObj) => [...allKeys, actObj[keyId]], [])

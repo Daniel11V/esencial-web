@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom"
-import { saveMoneyString, saveMoneyInLocalStorage, setLocaleStoragePin, setOpenCreatePin, setOpenBackdrop } from 'store/reducers/money';
+import { saveMoneyString, saveMoneyInLocalStorage, setLocaleStoragePin, setOpenCreatePin, setLoading } from 'store/reducers/money';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 // import { activeItem } from 'store/reducers/money';
 
@@ -46,7 +46,7 @@ const Database = () => {
         dispatch(saveMoneyString(stringData));
 
         if (isAuth) {
-            dispatch(setOpenBackdrop(true));
+            dispatch(setLoading(true));
             dispatch(saveMoneyInLocalStorage());
             navigate("/");
         } else {
