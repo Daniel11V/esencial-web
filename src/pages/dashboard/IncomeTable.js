@@ -62,6 +62,11 @@ const AccountForm = ({ editingAccount, setEditingAccount, saveAccount }) => {
         setEditingAccount(lastEditing => ({ ...lastEditing, [fieldId]: e?.target?.value }))
     }
 
+    const handleChangeAccountCurrency = (e) => {
+        handleChange(e, 'currency');
+        handleChangeCurrency(e)
+    }
+
     const handleChangeCurrency = (e) => {
         handleChange({
             target: {
@@ -139,7 +144,7 @@ const AccountForm = ({ editingAccount, setEditingAccount, saveAccount }) => {
                         <Select
                             labelId={'editAcc-selectCurrency-label'}
                             value={editingAccount?.currency || showCurrency}
-                            onChange={(e) => handleChange(e, 'currency')}
+                            onChange={(e) => handleChangeAccountCurrency(e)}
                         // sx={{ height: 45 }}
                         >
                             {currencies.map(curr => (
@@ -354,11 +359,7 @@ const OperationForm = ({ editingOperation, setEditingOperation, saveOperation })
                                 value={editingOperation?.amount}
                                 onChange={(e) => handleChange(e, 'amount')}
                                 sx={{ '& .MuiInputBase-root': { borderBottomRightRadius: 0, borderTopRightRadius: 0, height: 45 } }}
-                                fullWidth
-                                // InputProps={{
-                                //     startAdornment: <InputAdornment position={'start'}>{'$ '}</InputAdornment>,
-                                // }}
-                                label="Monto" />
+                                fullWidth label="Monto" />
                         ) : (
                             <TextField
                                 value={editingOperation?.totalAmount}

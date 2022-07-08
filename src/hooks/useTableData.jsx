@@ -177,7 +177,7 @@ export default function useTableData () {
         if (isValidOperation()) {
             dispatch(setLoading(true));
 
-            dispatch(editOperation, editAccount({ editingOperation: {
+            dispatch(editOperation({ editingOperation: {
                 ...editingOperation,
                 amount: 0, totalAmount: 0,
                 ...newAmountValue    
@@ -200,9 +200,9 @@ export default function useTableData () {
             "fromAccount": accountData?.creationDate,
             "fromAccountName": accountData?.accountName,
             "finalDate": newOperId,
-            "amount": 0,
-            "percAmount": 0,
-            "totalAmount": 0
+            "amount": "",
+            "percAmount": "",
+            "totalAmount": ""
         })
     }
 
@@ -279,7 +279,7 @@ export default function useTableData () {
             }, initialCapital }));
 
             setEditingAccount({})
-            checkOnlyOne(editingAccount.creationDate);
+            // checkOnlyOne(editingAccount.creationDate);
         } else {
 
         }
