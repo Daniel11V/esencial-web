@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from 'react-redux';
 import { saveMoneyString, setOpenCreatePin, setOpenAskPin, setIsAuth, setInvalidPin, setLoading, setLocaleStoragePin, saveMoneyInLocalStorage } from 'store/reducers/money';
 
+
 import {
     Button,
     TextField,
@@ -16,6 +17,7 @@ import {
     Backdrop,
     CircularProgress
 } from '@mui/material';
+import { firebase } from 'database';
 
 // ==============================|| AUTHENTICATION ||============================== //
 
@@ -24,7 +26,15 @@ const Authentication = ({ children }) => {
     const dispatch = useDispatch();
     const { localStoragePin, openCreatePin, openAskPin, loading, isAuth, invalidPin } = useSelector((state) => state.money.session);
 
+    const [db, setDb] = useState({})
+
+    useEffect(() => {
+        const regiesterId = "-MsM4chteMfrHnB2INAs";
+        const userRegister = firebase.moneyRegisters[regiesterId];
+    }, [])
+
     const [inputPin, setInputPin] = useState('')
+
 
     useEffect(() => {
         if (localStoragePin && !isAuth) dispatch(setOpenAskPin(true));

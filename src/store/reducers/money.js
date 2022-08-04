@@ -1,5 +1,6 @@
 // types
 import { createSlice, current } from '@reduxjs/toolkit';
+import { firebase } from 'database';
 
 // initial state
 const initialState = {

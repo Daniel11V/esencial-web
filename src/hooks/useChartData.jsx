@@ -13,15 +13,14 @@ export default function useChartData () {
     const {
         slot, selectedAmountPeriods, showOnlyInterest, 
 
-        accountChecked, 
-        extraInfoChecked, 
+        accountChecked, extraInfoChecked, 
 
         datePeriods,
         biggerValues,
         accountSeries,
         extraSeries,
     } = useContext(DashboardContext)
-    const allSeries = [...accountSeries, ...Object.values(extraSeries)]
+    // const allSeries = [...accountSeries, ...Object.values(extraSeries)]
     const allChecked = { ...accountChecked, ...extraInfoChecked }
     // console.log("ACA useChartData")
 

@@ -309,7 +309,7 @@ const OperationForm = ({ editingOperation, setEditingOperation, saveOperation })
                     </DialogContentText> */}
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: "100%", mt: 2 }}>
                     <MobileDatePicker
-                        value={editingOperation?.finalDate}
+                        value={editingOperation?.finalDate || ''}
                         onChange={(e) => handleChange(e, 'finalDate')}
                         inputFormat="DD/MM/yyyy"
                         label="Fin de la operación"
@@ -319,7 +319,7 @@ const OperationForm = ({ editingOperation, setEditingOperation, saveOperation })
                         <Select
                             id={'editOper-selectOperType'}
                             labelId={'editOper-selectOperType-label'}
-                            value={editingOperation?.operType}
+                            value={editingOperation?.operType || 'INCOME'}
                             onChange={(e) => handleChange(e, 'operType')}
                         // label="Tipo de operación"
                         >
@@ -330,13 +330,13 @@ const OperationForm = ({ editingOperation, setEditingOperation, saveOperation })
                     </FormControl>
                 </Stack>
                 <TextField
-                    value={editingOperation?.title}
+                    value={editingOperation?.title || ''}
                     onChange={(e) => handleChange(e, 'title')}
                     sx={{ mt: 4 }}
                     fullWidth
                     label="Titulo" />
                 <TextField
-                    value={editingOperation?.description}
+                    value={editingOperation?.description || ''}
                     onChange={(e) => handleChange(e, 'description')}
                     sx={{ mt: 4 }}
                     fullWidth
@@ -356,13 +356,13 @@ const OperationForm = ({ editingOperation, setEditingOperation, saveOperation })
                     <FormControl >
                         {amountToShow === 'AMOUNT' ? (
                             <TextField
-                                value={editingOperation?.amount}
+                                value={editingOperation?.amount || ''}
                                 onChange={(e) => handleChange(e, 'amount')}
                                 sx={{ '& .MuiInputBase-root': { borderBottomRightRadius: 0, borderTopRightRadius: 0, height: 45 } }}
                                 fullWidth label="Monto" />
                         ) : (
                             <TextField
-                                value={editingOperation?.totalAmount}
+                                value={editingOperation?.totalAmount || ''}
                                 onChange={(e) => handleChange(e, 'totalAmount')}
                                 sx={{ height: 45, '& .MuiInputBase-root': { borderBottomRightRadius: 0, borderTopRightRadius: 0, height: 45 } }}
                                 fullWidth
@@ -398,9 +398,14 @@ const IncomeTableRow = ({ oper, setEditingOperation }) => {
 
     const [openDetails, setOpenDetails] = useState(false)
 
+    const operTypeString = {
+        INCOME: 'Ingreso',
+        INTEREST: 'Interes',
+    }
+
     const formattedValues = {
         finalDate: oper?.finalDate ? formatDate(oper?.finalDate) : "  -  ",
-        title: oper?.title,
+        title: oper?.title || operTypeString[oper?.operType],
         dif: oper?.amount ? formatNum(oper?.amount) : "0",
         difPerc: oper?.percAmount ? formatNum(oper?.percAmount) : "  -  ",
         finalAmount: oper?.totalAmount ? formatNum(oper?.totalAmount) : "0",

@@ -8,8 +8,9 @@ import ReactApexChart from 'react-apexcharts';
 // ==============================|| INCOME AREA CHART ||============================== //
 
 const IncomeAreaChart = React.memo(({ height, width }) => {
-    const { options, series } = useChartData()
-    // console.log("ACA IncomeAreaChart")
+    // const { options, series } = useChartData()
+    // console.log("ACA series", series)
+    return <div></div>
     return <ReactApexChart options={options} series={series} type="area" height={height} width={width} />;
 });
 

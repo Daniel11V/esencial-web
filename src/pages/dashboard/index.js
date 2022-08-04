@@ -104,7 +104,7 @@ const DashboardDefault = () => {
                     </Grid>
                 </Grid>
                 <MainCard ref={graphCardRef} content={false} sx={{ mt: 1.5, pt: 1, pr: 2, pl: 1, height: fullHeight }}>
-                    {/* <IncomeAreaChart width={graphCardWidth} height={graphCardHeight} /> */}
+                    <IncomeAreaChart width={graphCardWidth} height={graphCardHeight} />
                 </MainCard>
             </Grid>
             <Grid item xs={12} md={4} lg={3} >

@@ -140,7 +140,7 @@ export function DashboardContextProvider ({children}) {
                     savedOperations.push({
                         ...accountOperations[i],
                         amount: newAmount,
-                        percAmount: (lastOperation.totalFromAmount !== 0) ? (newAmount / lastOperation.totalFromAmount * 100) : 0,
+                        percAmount: (lastOperation.totalFromAmount !== 0 && accountOperations[i].operType === "INTEREST") ? (newAmount / lastOperation.totalFromAmount * 100) : 0,
                         totalAmount: newTotalAmount,
                     })
                 }

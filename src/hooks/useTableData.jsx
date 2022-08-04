@@ -7,7 +7,8 @@ import { editOperation, editAccount, setLoading, setShowCurrency } from 'store/r
 export default function useTableData () {
     const dispatch = useDispatch();
     const { accountsData, accountChecked, checkOnlyOne } = useContext(DashboardContext)
-
+    console.log("ACA accountsData", accountsData)
+    console.log("ACA accountChecked", accountChecked)
     
     const [accountData, setAccountData] = useState({})
     const [tableData, setTableData] = useState([])
